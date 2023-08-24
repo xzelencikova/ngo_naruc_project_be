@@ -2,30 +2,30 @@ Requirements:
     - python
 
 Configuration:
-To create a virtual environment:
+    To create a virtual environment:
 
-    python -m venv venv
+    <i>python -m venv venv</i>
 
-To activate a virtual environment:
+    To activate a virtual environment:
 
-    venv\Scripts\activate
+    <i>venv\Scripts\activate</i>
 
-To install library:
+    To install library:
 
-    pip install <library>
+    <i>pip install <library></i>
 
-To install libraries from requirements.txt file:
+    To install libraries from requirements.txt file:
 
-    pip install -r requirements.txt
+    <i>pip install -r requirements.txt</i>
 
 Run:
     To run the application:
     
-    python app.py
+    <i>python app.py</i>
 
 Rules:
-1. Api calls for each feature should have its own Python file. 
-2. The files should be created in *namespaces* folder with *ns_* preffix.
-3. Import file into *app.py* and add to namespace with 
+    1. Api calls for each feature should have its own Python file. 
+    2. The files should be created in <i>namespaces</i> folder with <i>ns_</i> preffix.
+    3. Import file into <i>app.py</i> and add to namespace with 
         
-    ngo_naruc.add_resource(<class of imported endpoint>, path)
+        <i>ngo_naruc.add_resource(<class of imported endpoint>, path)</i>

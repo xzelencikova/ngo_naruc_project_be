@@ -3,11 +3,17 @@ from flask_restx import Namespace, Resource, Api
 import os
 import pandas as pd
 from flask_cors import CORS, cross_origin
+from pymongo import MongoClient
+from dotenv import load_dotenv
 
 from namespaces.ns_naruc import api as ngo_naruc
 from namespaces.ns_manage_survey import *
 
+load_dotenv()
+
 port = os.getenv('PORT')
+
+client = MongoClient(os.environ.get('MONDODB_URI'))
 
 app = Flask(__name__)
 api = Api(app)
