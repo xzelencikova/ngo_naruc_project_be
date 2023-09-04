@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 
 from namespaces.ns_naruc import api as ngo_naruc
 from namespaces.ns_manage_survey import *
+from namespaces.ns_login import *
 
 load_dotenv()
 
@@ -31,3 +32,4 @@ if __name__ == '__main__':
     
     else:
         app.run(host='0.0.0.0', port=int(port), debug=False, threaded=True)
+        
