@@ -4,3 +4,5 @@ python-dotenv
 sqlalchemy
 flask-cors
 pymongo
+bcrypt
+pandas
