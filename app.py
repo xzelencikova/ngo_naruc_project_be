@@ -7,23 +7,24 @@ from pymongo import MongoClient
 from dotenv import load_dotenv
 
 from namespaces.ns_naruc import api as ngo_naruc
-from namespaces.ns_manage_survey import *
+from namespaces.ns_questionnaire import *
 from namespaces.ns_login import *
 
 load_dotenv()
 
 port = os.getenv('PORT')
 
-client = MongoClient(os.environ.get('MONDODB_URI'))
+client = MongoClient(os.environ.get('MONGODB_URI'))
 
 app = Flask(__name__)
 api = Api(app)
 
 api.add_namespace(ngo_naruc, path='/ngo')
 
-# Example endpoint
-ngo_naruc.add_resource(manage_survey, '/survey')
-
+# questionnaire endpoints
+ngo_naruc.add_resource(get_all_questions, '/questions')
+ngo_naruc.add_resource(get_questions_by_category, '/questions_by_category')
+ngo_naruc.add_resource(question_by_id, "/question/<string:id>")
 
 
 if __name__ == '__main__':

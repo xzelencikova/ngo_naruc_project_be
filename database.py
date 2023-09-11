@@ -5,5 +5,5 @@ from dotenv import load_dotenv
 load_dotenv()
 
 def create_connection():
-    client = MongoClient(os.environ.get('MONDODB_URI'))
+    client = MongoClient(os.environ.get('MONGODB_URI'))
     return client
