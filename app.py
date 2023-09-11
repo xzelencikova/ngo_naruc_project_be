@@ -25,6 +25,7 @@ api.add_namespace(ngo_naruc, path='/ngo')
 ngo_naruc.add_resource(manage_survey, '/survey')
 
 
+
 if __name__ == '__main__':
     
     if port is None:

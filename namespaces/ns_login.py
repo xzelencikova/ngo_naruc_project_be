@@ -11,22 +11,26 @@ client = MongoClient('localhost', 27017)
 db = client['your_db_name']
 users_collection = db['users']
 
-@app.route('/login', methods=['POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    data = request.json
-    email = data['email']
-    password = data['password']
+    if request.method == 'GET':
+        return 'Welcome to the login page', 200
 
-    user = users_collection.find_one({'email': email})
-    if user and bcrypt.checkpw(password.encode('utf-8'), user['password']):
-        return jsonify({
-            'name': user['name'],
-            'surname': user['surname'],
-            'email': user['email'],
-            'role': user['role']
-        }), 200
-    else:
-        return 'Not Found', 404
+    if request.method == 'POST':
+        data = request.json
+        email = data['email']
+        password = data['password']
+
+        user = users_collection.find_one({'email': email})
+        if user and bcrypt.checkpw(password.encode('utf-8'), user['password']):
+            return jsonify({
+                'name': user['name'],
+                'surname': user['surname'],
+                'email': user['email'],
+                'role': user['role']
+            }), 200
+        else:
+            return 'Not Found', 404
 
 @app.route('/sign_in', methods=['POST'])
 def sign_in():
