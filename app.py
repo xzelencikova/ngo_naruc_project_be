@@ -26,6 +26,14 @@ ngo_naruc.add_resource(get_all_questions, '/questions')
 ngo_naruc.add_resource(get_questions_by_category, '/questions_by_category')
 ngo_naruc.add_resource(question_by_id, "/question/<string:id>")
 
+# user_management endpoints
+ngo_naruc.add_resource(login,'/login')
+ngo_naruc.add_resource(sign_in,'/sign_in')
+ngo_naruc.add_resource(get_users,'/users')
+ngo_naruc.add_resource(update_role,'/role/<user_id>')
+ngo_naruc.add_resource(update_user_info,'/update_user/<user_id>')
+ngo_naruc.add_resource(delete_user,'/user/<user_id>')
+
 
 if __name__ == '__main__':
     

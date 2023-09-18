@@ -1,74 +1,142 @@
 from flask_restx import Namespace, Resource
 from namespaces.ns_naruc import api
-
-from flask import Flask, request, jsonify
-from pymongo import MongoClient
+from database import create_connection
+from flask import request, jsonify
 from bson.objectid import ObjectId
 import bcrypt
+import uuid
+from models import login_model, user_model
 
-app = Flask(__name__)
-client = MongoClient('localhost', 27017)
-db = client['your_db_name']
+# DB Connect
+client = create_connection()
+db = client['naruc_app']
+
 users_collection = db['users']
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'GET':
-        return 'Welcome to the login page', 200
-
-    if request.method == 'POST':
-        data = request.json
+#login working
+class login(Resource):
+    @api.doc(description="Login with email and password")
+    @api.expect(login_model)
+    def post(self):
+        data = api.payload
         email = data['email']
         password = data['password']
 
-        user = users_collection.find_one({'email': email})
-        if user and bcrypt.checkpw(password.encode('utf-8'), user['password']):
-            return jsonify({
-                'name': user['name'],
-                'surname': user['surname'],
-                'email': user['email'],
-                'role': user['role']
-            }), 200
-        else:
-            return 'Not Found', 404
+        try:
+            users_collection = db.users
 
-@app.route('/sign_in', methods=['POST'])
-def sign_in():
-    data = request.json
-    hashed_password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())
+            user = users_collection.find_one({'email': email})
 
-    user_data = {
-        'name': data['name'],
-        'surname': data['surname'],
-        'email': data['email'],
-        'role': data['role'],
-        'password': hashed_password
-    }
+            if user and bcrypt.checkpw(password.encode('utf-8'), user['password']):
+                user_data = {
+                    'name': user['name'],
+                    'surname': user['surname'],
+                    'email': user['email'],
+                    'role': user['role']
+                }
+                return user_data, 200
+            else:
+                return 'Not Found', 404
+        except Exception as e:
+            return str(e), 500
 
-    users_collection.insert_one(user_data)
-    return 'User created', 200
+#add user working
+class sign_in(Resource):
+    @api.doc(description="Create a new user")
+    @api.expect(user_model)  # Use the defined model for the expected input
+    def post(self):
+        # Generate a new unique ID for the user
+        user_id = uuid.uuid4().hex
 
-@app.route('/users', methods=['GET'])
-def get_users():
-    users = list(users_collection.find({}, {'_id': 0, 'password': 0}))
-    return jsonify(users), 200
+        # Set the '_id' field to the generated user ID
+        api.payload['_id'] = user_id
+        data = api.payload  # Use api.payload to access the JSON data
 
-@app.route('/role/<user_id>', methods=['PUT'])
-def update_role(user_id):
-    new_role = request.json['role']
-    users_collection.update_one({'_id': ObjectId(user_id)}, {'$set': {'role': new_role}})
-    return '', 200
+        # Hash the password
+        hashed_password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())
 
-@app.route('/user/<user_id>', methods=['PUT'])
-def update_user_info(user_id):
-    # Implement updating user info based on request
-    return '', 200
+        # Create a user data dictionary
+        user_data = {
+            '_id': user_id,  # Set '_id' to the generated user ID
+            'name': data['name'],
+            'surname': data['surname'],
+            'email': data['email'],
+            'role': data['role'],
+            'password': hashed_password
+        }
 
-@app.route('/user/<user_id>', methods=['DELETE'])
-def delete_user(user_id):
-    users_collection.delete_one({'_id': ObjectId(user_id)})
-    return '', 200
+        try:
+            # Connect to MongoDB and select the 'users' collection
+            users_collection = db.users
 
-if __name__ == '__main__':
-    app.run(debug=True)
+            # Insert the new user data into the 'users' collection
+            users_collection.insert_one(user_data)
 
+            return 'User created', 200
+        except Exception as e:
+            return str(e), 500 
+
+#get_users working
+class get_users(Resource):
+    @api.doc(description="Get information about all registered users")
+    def get(self):
+        try:
+            # Find all users, excluding the '_id' and 'password' fields
+            users = list(db.users.find({}, {'_id': 0, 'password': 0}))
+            
+            if users:
+                return users, 200
+            else:
+                return [], 200  # Return an empty list with a 200 status code if no users are found
+        except Exception as e:
+            return str(e), 500 
+
+class update_role(Resource):
+    @api.doc(description="Update user role by user ID")
+    def put(self, user_id):
+        new_role = request.json['role']
+
+        try:
+            result = db.users.update_one({'_id': user_id}, {'$set': {'role': new_role}})
+
+            if result.modified_count == 1:
+                return 'User role updated successfully', 200
+            else:
+                return 'User not found', 404
+        except Exception as e:
+            return str(e), 500  # Return a 500 status code for server error
+
+#update_user_info should be working
+class update_user_info(Resource):
+     @api.expect(user_model)
+     def put(self, user_id):
+        data = request.json
+        hashed_password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())
+        try:
+            result = db.users.update_one({'_id': user_id}, {
+                '$set': {
+                    'name': data['name'],
+                    'surname': data['surname'],
+                    'email': data['email'],
+                    'role': data['role'],
+                    'password': hashed_password
+                }
+            })
+            if result.modified_count == 1:
+                return 'User information updated successfully', 200
+            else:
+                return 'User not found', 404
+        except Exception as e:
+            return str(e), 500  # Return a 500 status code for server error
+
+#delete user by id working
+class delete_user(Resource):
+    def delete(self, user_id):
+        try:
+            result = db.users.delete_one({'_id':user_id})
+            if result.deleted_count == 1:
+                return 'User was deleted', 202
+            else:
+                return 'User not found', 404
+        except Exception as e:
+            return str(e), 500 
