@@ -51,17 +51,24 @@ class get_questions_by_category(Resource):
         
         for r in response:
             
-            if r['category'] in categories:
-                categories[r['category']]["questions"].append({"_id": r['_id'], "question": r['question']})
+            if r['order'] in categories:
+                categories[r['order']]["questions"].append({"_id": r['_id'], "question": r['question']})
                 continue
             
-            categories[r['category']] = {
+            categories[r['order']] = {
+                "category": r['category'],
                 "icon": r['icon'],
                 "order": r['order'],
                 "questions": [{"_id": r['_id'], "question": r['question']}]
             }
+            
+        print(categories)
         
-        return categories
+        questions_by_categories = []
+        for c in categories:
+            questions_by_categories.append(categories[c])
+            
+        return sorted(questions_by_categories, key=lambda d: d['order'])
     
 class question_by_id(Resource):
     '''
