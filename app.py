@@ -30,7 +30,6 @@ ngo_naruc.add_resource(question_by_id, "/question/<string:id>")
 ngo_naruc.add_resource(login,'/login')
 ngo_naruc.add_resource(sign_in,'/sign_in')
 ngo_naruc.add_resource(get_users,'/users')
-ngo_naruc.add_resource(update_role,'/role/<user_id>')
 ngo_naruc.add_resource(update_user_info,'/update_user/<user_id>')
 ngo_naruc.add_resource(delete_user,'/user/<user_id>')
 

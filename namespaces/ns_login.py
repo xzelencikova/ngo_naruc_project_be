@@ -91,21 +91,6 @@ class get_users(Resource):
         except Exception as e:
             return str(e), 500 
 
-class update_role(Resource):
-    @api.doc(description="Update user role by user ID")
-    def put(self, user_id):
-        new_role = request.json['role']
-
-        try:
-            result = db.users.update_one({'_id': user_id}, {'$set': {'role': new_role}})
-
-            if result.modified_count == 1:
-                return 'User role updated successfully', 200
-            else:
-                return 'User not found', 404
-        except Exception as e:
-            return str(e), 500  # Return a 500 status code for server error
-
 #update_user_info should be working
 class update_user_info(Resource):
      @api.expect(user_model)
