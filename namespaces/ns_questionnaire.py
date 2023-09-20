@@ -9,7 +9,7 @@ import uuid
 client = create_connection()
 db = client['naruc_app']
 
-class get_all_questions(Resource):
+class QuestionsApi(Resource):
     '''
         Endpoint na získanie všetkých otázok s prislúchajúcimi kategóriami z databázy a vytvorenie novej otázky.
     '''
@@ -37,7 +37,7 @@ class get_all_questions(Resource):
         
         return api.payload
     
-class get_questions_by_category(Resource):
+class QuestionsCategoryApi(Resource):
     '''
         Endpoint na získanie všetkých kategórií s prislúchajúcimi ikonami a zoznamom otázok.
     '''
@@ -70,7 +70,7 @@ class get_questions_by_category(Resource):
             
         return sorted(questions_by_categories, key=lambda d: d['order'])
     
-class question_by_id(Resource):
+class QuestionByIdApi(Resource):
     '''
         Endpoint na získanie/aktualizovanie/vymazanie otázky podľa id.
     '''

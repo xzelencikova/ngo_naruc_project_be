@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 from namespaces.ns_naruc import api as ngo_naruc
 from namespaces.ns_questionnaire import *
 from namespaces.ns_login import *
+from namespaces.ns_question_rating import *
 
 load_dotenv()
 
@@ -23,9 +24,12 @@ CORS(app)
 api.add_namespace(ngo_naruc, path='/ngo')
 
 # questionnaire endpoints
-ngo_naruc.add_resource(get_all_questions, '/questions')
-ngo_naruc.add_resource(get_questions_by_category, '/questionnaire')
-ngo_naruc.add_resource(question_by_id, "/question/<string:id>")
+ngo_naruc.add_resource(QuestionsApi, '/questions')
+ngo_naruc.add_resource(QuestionsCategoryApi, '/questionnaire')
+ngo_naruc.add_resource(QuestionByIdApi, "/question/<string:id>")
+
+# ratings endpoints
+ngo_naruc.add_resource(RatingsApi, '/rating')
 
 # user_management endpoints
 ngo_naruc.add_resource(login,'/login')
@@ -35,7 +39,6 @@ ngo_naruc.add_resource(update_role,'/role/<user_id>')
 ngo_naruc.add_resource(update_user_info,'/update_user/<user_id>')
 ngo_naruc.add_resource(delete_user,'/user/<user_id>')
 
-
 if __name__ == '__main__':
     
     if port is None:
@@ -43,4 +46,3 @@ if __name__ == '__main__':
     
     else:
         app.run(host='0.0.0.0', port=int(port), debug=False, threaded=True)
-        
