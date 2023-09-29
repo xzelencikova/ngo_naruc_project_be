@@ -19,13 +19,17 @@ client = MongoClient(os.environ.get('MONGODB_URI'))
 
 app = Flask(__name__)
 api = Api(app)
+CORS(app)
 
 api.add_namespace(ngo_naruc, path='/ngo')
 
 # questionnaire endpoints
-ngo_naruc.add_resource(get_all_questions, '/questions')
-ngo_naruc.add_resource(get_questions_by_category, '/questions_by_category')
-ngo_naruc.add_resource(question_by_id, "/question/<string:id>")
+ngo_naruc.add_resource(QuestionsApi, '/questions')
+ngo_naruc.add_resource(QuestionsCategoryApi, '/questionnaire')
+ngo_naruc.add_resource(QuestionByIdApi, "/question/<string:id>")
+
+# ratings endpoints
+ngo_naruc.add_resource(RatingsApi, '/rating')
 
 # user_management endpoints
 ngo_naruc.add_resource(login,'/user/login')
@@ -48,4 +52,3 @@ if __name__ == '__main__':
     
     else:
         app.run(host='0.0.0.0', port=int(port), debug=False, threaded=True)
-        
