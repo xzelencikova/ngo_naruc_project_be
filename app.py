@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 from namespaces.ns_naruc import api as ngo_naruc
 from namespaces.ns_questionnaire import *
 from namespaces.ns_login import *
+from namespaces.ns_client import *
 
 load_dotenv()
 
@@ -27,12 +28,18 @@ ngo_naruc.add_resource(get_questions_by_category, '/questions_by_category')
 ngo_naruc.add_resource(question_by_id, "/question/<string:id>")
 
 # user_management endpoints
-ngo_naruc.add_resource(login,'/login')
-ngo_naruc.add_resource(sign_in,'/sign_in')
-ngo_naruc.add_resource(get_users,'/users')
-ngo_naruc.add_resource(update_user_info,'/update_user/<user_id>')
-ngo_naruc.add_resource(delete_user,'/user/<user_id>')
+ngo_naruc.add_resource(login,'/user/login')
+ngo_naruc.add_resource(sign_in,'/user/sign_in')
+ngo_naruc.add_resource(get_users,'/user/show_users')
+ngo_naruc.add_resource(update_user_info,'/user/update_user/<user_id>')
+ngo_naruc.add_resource(delete_user,'/user/delete_user/<user_id>')
 
+# client_management endpoints
+ngo_naruc.add_resource(get_client_info,'/client/get_client_info/<user_id>')
+ngo_naruc.add_resource(get_client_results,'/client/get_client_results/<user_id>')
+ngo_naruc.add_resource(add_client,'/client/add_new_client')
+ngo_naruc.add_resource(update_client_info,'/client/update_client/<user_id>')
+ngo_naruc.add_resource(delete_client,'/client/delete_client/<user_id>')
 
 if __name__ == '__main__':
     
