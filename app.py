@@ -10,6 +10,7 @@ from namespaces.ns_naruc import api as ngo_naruc
 from namespaces.ns_questionnaire import *
 from namespaces.ns_login import *
 from namespaces.ns_client import *
+from namespaces.ns_question_rating import *
 
 load_dotenv()
 
