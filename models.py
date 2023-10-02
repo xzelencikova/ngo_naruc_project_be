@@ -44,6 +44,6 @@ client_model = api.model("Add client", {
     "surname": fields.String,
     "registration_date": fields.DateTime(dt_format=datetime_format),
     "contract_no": fields.String,
-    "last_phase": fields.String,
+    "last_phase": fields.Integer,
     "active": fields.Boolean
 })

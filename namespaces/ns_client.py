@@ -18,24 +18,11 @@ class add_client(Resource):
     @api.doc(description="Create a new client")
     @api.expect(client_model)  
     def post(self):
-        user_id = uuid.uuid4().hex
-
-        api.payload['_id'] = user_id
-        data = api.payload  
-
-        user_data = {
-            '_id': user_id, 
-            'name': data['name'],
-            'surname': data['surname'],
-            'registration_date': data['registration_date'],
-            'contract_no': data['contract_no'],
-            'last_phase': data['last_phase'],
-            'active': data['active']
-        }
+        print(api.payload)
+        api.payload['_id'] = uuid.uuid4().hex
 
         try:
-            users_collection = db.clients
-            users_collection.insert_one(user_data)
+            db.clients.insert_one(api.payload)
 
             return 'Client created', 200
         except Exception as e:
