@@ -13,7 +13,7 @@ db = client['naruc_app']
 
 users_collection = db['users']
 
-#login working
+#login 
 class login(Resource):
     @api.doc(description="Login with email and password")
     @api.expect(login_model)
@@ -40,7 +40,7 @@ class login(Resource):
         except Exception as e:
             return str(e), 500
 
-#add user working
+#add user
 class sign_in(Resource):
     @api.doc(description="Create a new user")
     @api.expect(user_model)  # Use the defined model for the expected input
@@ -76,7 +76,7 @@ class sign_in(Resource):
         except Exception as e:
             return str(e), 500 
 
-#get_users working
+#get_users 
 class get_users(Resource):
     @api.doc(description="Get information about all registered users")
     def get(self):
@@ -91,7 +91,7 @@ class get_users(Resource):
         except Exception as e:
             return str(e), 500 
 
-#update_user_info should be working
+#update_user_info 
 class update_user_info(Resource):
      @api.expect(user_model)
      def put(self, user_id):
@@ -114,7 +114,21 @@ class update_user_info(Resource):
         except Exception as e:
             return str(e), 500  # Return a 500 status code for server error
 
-#delete user by id working
+# Get user info
+class get_user_info(Resource):
+    @api.doc(description="Get information about a specific client by ID")
+    def get(self, user_id):
+        try:
+            users = db.users.find_one({'_id': user_id}, {'_id': 0, 'password': 0})
+
+            if users:
+                return users, 200
+            else:
+                return {'message': 'Client not found'}, 404
+        except Exception as e:
+            return str(e), 500
+
+#delete user by id 
 class delete_user(Resource):
     def delete(self, user_id):
         try:

@@ -79,6 +79,21 @@ class update_client_info(Resource):
         except Exception as e:
             return str(e), 500  # Return a 500 status code for server error
 
+# show all clients
+class get_clients(Resource):
+    @api.doc(description="Get information about all clients")
+    def get(self):
+        try:
+            # Find all users, excluding the '_id' and 'password' fields
+            users = list(db.clients.find({}, {'_id': 0}))
+            
+            if users:
+                return users, 200
+            else:
+                return [], 200  # Return an empty list with a 200 status code if no users are found
+        except Exception as e:
+            return str(e), 500 
+
 # Delete client
 class delete_client(Resource):
     def delete(self, user_id):

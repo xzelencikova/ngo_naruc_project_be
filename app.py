@@ -38,6 +38,7 @@ ngo_naruc.add_resource(sign_in,'/user/sign_in')
 ngo_naruc.add_resource(get_users,'/user/show_users')
 ngo_naruc.add_resource(update_user_info,'/user/update_user/<user_id>')
 ngo_naruc.add_resource(delete_user,'/user/delete_user/<user_id>')
+ngo_naruc.add_resource(get_user_info,'/user/get_user_info/<user_id>')
 
 # client_management endpoints
 ngo_naruc.add_resource(get_client_info,'/client/get_client_info/<user_id>')
@@ -45,6 +46,7 @@ ngo_naruc.add_resource(get_client_results,'/client/get_client_results/<user_id>'
 ngo_naruc.add_resource(add_client,'/client/add_new_client')
 ngo_naruc.add_resource(update_client_info,'/client/update_client/<user_id>')
 ngo_naruc.add_resource(delete_client,'/client/delete_client/<user_id>')
+ngo_naruc.add_resource(get_clients,'/client/show_clients/')
 
 if __name__ == '__main__':
     
