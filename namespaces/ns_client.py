@@ -33,7 +33,7 @@ class get_client_info(Resource):
     @api.doc(description="Get information about a specific client by ID")
     def get(self, user_id):
         try:
-            clients = db.clients.find_one({'_id': user_id}, {'_id': 0})
+            clients = db.clients.find_one({'_id': user_id})
 
             if clients:
                 return clients, 200
@@ -47,7 +47,7 @@ class get_client_results(Resource):
     @api.doc(description="Get information about all clients")
     def get(self,user_id):
         try:
-            users = list(db.client.find({}, {'_id': 0}))
+            users = list(db.client.find())
 
             if users:
                 return users, 200
@@ -64,12 +64,12 @@ class update_client_info(Resource):
         try:
             result = db.clients.update_one({'_id': user_id}, {
                 '$set': {
-            'name': data['name'],
-            'surname': data['surname'],
-            'registration_date': data['registration_date'],
-            'contract_no': data['contract_no'],
-            'last_phase': data['last_phase'],
-            'active': data['active']
+                    'name': data['name'],
+                    'surname': data['surname'],
+                    'registration_date': data['registration_date'],
+                    'contract_no': data['contract_no'],
+                    'last_phase': data['last_phase'],
+                    'active': data['active']
                 }
             })
             if result.modified_count == 1:
@@ -84,8 +84,8 @@ class get_clients(Resource):
     @api.doc(description="Get information about all clients")
     def get(self):
         try:
-            # Find all users, excluding the '_id' and 'password' fields
-            users = list(db.clients.find({}, {'_id': 0}))
+            # Find all users
+            users = list(db.clients.find())
             
             if users:
                 return users, 200
