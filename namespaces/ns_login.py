@@ -82,7 +82,7 @@ class get_users(Resource):
     def get(self):
         try:
             # Find all users, excluding the '_id' and 'password' fields
-            users = list(db.users.find({}, {'_id': 0, 'password': 0}))
+            users = list(db.users.find({}, {'password': 0}))
             
             if users:
                 return users, 200
@@ -119,7 +119,7 @@ class get_user_info(Resource):
     @api.doc(description="Get information about a specific client by ID")
     def get(self, user_id):
         try:
-            users = db.users.find_one({'_id': user_id}, {'_id': 0, 'password': 0})
+            users = db.users.find_one({'_id': user_id}, {'password': 0})
 
             if users:
                 return users, 200
