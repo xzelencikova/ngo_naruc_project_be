@@ -2,6 +2,7 @@ from flask_restx import Namespace, Resource, reqparse
 from database import create_connection
 from flask import request, jsonify
 from bson.objectid import ObjectId
+from datetime import datetime 
 import uuid
 from models import client_model
 
@@ -15,17 +16,23 @@ users_collection = db['clients']
 
 # Add client
 class add_client(Resource):
-    @api.doc(description="Create a new client")
-    @api.expect(client_model)  
-    def post(self):
-        print(api.payload)
-        api.payload['_id'] = uuid.uuid4().hex
+     @api.doc(description="Create a new client")
+     @api.expect(client_model)
+     def post(self):
+         client_data = api.payload
+         client_data['_id'] = uuid.uuid4().hex
+         client_data['registration_date'] = datetime.now().strftime('%Y-%m-%d')
+         year = datetime.now().year
+         clients_created_this_year = db.clients.count_documents({
+            "registration_date": {"$regex": f"^{year}"}
+        })
+         contract_no = f"{clients_created_this_year + 1:02d}-{year}"
+         client_data['contract_no'] = contract_no
 
-        try:
-            db.clients.insert_one(api.payload)
-
+         try:
+            db.clients.insert_one(client_data)
             return 'Client created', 200
-        except Exception as e:
+         except Exception as e:
             return str(e), 500
 
 # Get client info
@@ -44,15 +51,15 @@ class get_client_info(Resource):
 
 # Get clients results/ not working, needs to be fixed later
 class get_client_results(Resource):
-    @api.doc(description="Get information about all clients")
-    def get(self,user_id):
+    @api.doc(description="Get information about a specific client's results")
+    def get(self, user_id):
         try:
-            users = list(db.client.find())
-
-            if users:
-                return users, 200
+            ratings = db.ratings.find({"client_id": user_id})
+            client_ratings = list(ratings)
+            if client_ratings:
+                return client_ratings, 200
             else:
-                return [], 200  
+                return {"message": "Client ratings not found"}, 404
         except Exception as e:
             return str(e), 500
         
@@ -66,8 +73,6 @@ class update_client_info(Resource):
                 '$set': {
                     'name': data['name'],
                     'surname': data['surname'],
-                    'registration_date': data['registration_date'],
-                    'contract_no': data['contract_no'],
                     'last_phase': data['last_phase'],
                     'active': data['active']
                 }
@@ -84,13 +89,12 @@ class get_clients(Resource):
     @api.doc(description="Get information about all clients")
     def get(self):
         try:
-            # Find all users
             users = list(db.clients.find())
             
             if users:
                 return users, 200
             else:
-                return [], 200  # Return an empty list with a 200 status code if no users are found
+                return [], 200 
         except Exception as e:
             return str(e), 500 
 

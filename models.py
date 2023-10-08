@@ -42,7 +42,7 @@ rating_model = api.model("Rating", {
 client_model = api.model("Add client", {
     "name": fields.String,
     "surname": fields.String,
-    "registration_date": fields.DateTime(dt_format=datetime_format),
+    "registration_date": fields.String,
     "contract_no": fields.String,
     "last_phase": fields.Integer,
     "active": fields.Boolean
