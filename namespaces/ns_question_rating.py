@@ -26,3 +26,17 @@ class RatingsApi(Resource):
         db.ratings.insert_one(api.payload)
         
         return api.payload
+
+# Get rating info by ID
+class get_rating_info(Resource):
+    @api.doc(description="Get information about a specific rating by ID")
+    def get(self, rating_id):
+        try:
+            rating = db.ratings.find_one({'_id': rating_id})
+
+            if rating:
+                return rating, 200
+            else:
+                return {'message': 'Rating not found'}, 404
+        except Exception as e:
+            return str(e), 500
