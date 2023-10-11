@@ -20,7 +20,7 @@ class add_client(Resource):
      @api.expect(client_model)
      def post(self):
          client_data = api.payload
-         client_data['_id'] = uuid.uuid4().hex
+        
          client_data['registration_date'] = datetime.now().strftime('%Y-%m-%d')
          year = datetime.now().year
          clients_created_this_year = db.clients.count_documents({
