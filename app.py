@@ -32,6 +32,7 @@ ngo_naruc.add_resource(QuestionByIdApi, "/question/<string:id>")
 # ratings endpoints
 ngo_naruc.add_resource(RatingsApi, '/rating')
 ngo_naruc.add_resource(get_rating_info,'/rating/get_rating_by_id/<rating_id>')
+ngo_naruc.add_resource(RatingOverviewApi, '/rating_overview/<string:client_id>')
 
 # user_management endpoints
 ngo_naruc.add_resource(login,'/user/login')

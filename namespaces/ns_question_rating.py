@@ -40,3 +40,79 @@ class get_rating_info(Resource):
                 return {'message': 'Rating not found'}, 404
         except Exception as e:
             return str(e), 500
+        
+def count_ratings_for_phase(category, questions):
+    value = 0
+    for q in questions:
+        if q["category"] == category:
+            value += q["rating"]
+
+    return value
+    
+# Get rating overview for client
+class RatingOverviewApi(Resource):
+    
+    def get(self, client_id):
+        
+        response = db.questionnaire.distinct("category")
+        overview = {
+            "bar_overview": [],
+            "pie_1": [],
+            "pie_2": [],
+            "pie_3": []
+        }
+        
+        for r in response:
+            
+            phase_1 = 0
+            phase_2 = 0
+            phase_3 = 0
+            
+            questions_count = len(list(db.questionnaire.find({"category": r})))
+            
+            client_ratings = db.ratings.find({"client_id": client_id})
+
+            for c in client_ratings:
+                if c["phase_no"] == 1:
+                    phase_1 = count_ratings_for_phase(r, c["questions_rating"])
+                elif c["phase_no"] == 2:
+                    phase_2 = count_ratings_for_phase(r, c["questions_rating"])
+                elif c["phase_no"] == 3:
+                    phase_3 = count_ratings_for_phase(r, c["questions_rating"])
+            
+            overview['bar_overview'].append(
+                {
+                    "name": r,
+                    "series": [
+                        {
+                            "name": "Fáza 1", 
+                            "value": round(phase_1 / (questions_count * 3) * 100, 2)
+                        },
+                        {
+                            "name": "Fáza 2", 
+                            "value": round(phase_2 / (questions_count * 3) * 100, 2)
+                        },
+                        {
+                            "name": "Fáza 3", 
+                            "value": round(phase_3 / (questions_count * 3) * 100, 2)
+                        }
+                    ]
+                })
+            overview['pie_1'].append(
+                {
+                    "name": r,
+                    "value": phase_1
+                })
+            overview['pie_2'].append(
+                {
+                    "name": r,
+                    "value": phase_2
+                })
+            overview['pie_3'].append(
+                {
+                    "name": r,
+                    "value": phase_3
+                })
+            
+        return overview
+        
