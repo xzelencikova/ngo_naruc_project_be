@@ -31,7 +31,7 @@ class add_client(Resource):
 
          try:
             db.clients.insert_one(client_data)
-            return 'Client created', 200
+            return client_data, 200
          except Exception as e:
             return str(e), 500
 
