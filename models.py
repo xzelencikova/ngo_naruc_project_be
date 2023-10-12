@@ -40,7 +40,6 @@ rating_model = api.model("Rating", {
 })
 
 client_model = api.model("Add client", {
-    "_id": fields.String,
     "name": fields.String,
     "surname": fields.String,
     "registration_date": fields.String,
