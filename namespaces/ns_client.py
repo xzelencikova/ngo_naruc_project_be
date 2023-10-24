@@ -22,12 +22,7 @@ class add_client(Resource):
          client_data = api.payload
          client_data['_id'] = uuid.uuid4().hex
          client_data['registration_date'] = datetime.now().strftime('%Y-%m-%d')
-         year = datetime.now().year
-         clients_created_this_year = db.clients.count_documents({
-            "registration_date": {"$regex": f"^{year}"}
-        })
-         contract_no = f"{clients_created_this_year + 1:02d}-{year}"
-         client_data['contract_no'] = contract_no
+         
 
          try:
             db.clients.insert_one(client_data)
