@@ -6,3 +6,4 @@ flask-cors
 pymongo
 bcrypt
 pandas
+pyjwt

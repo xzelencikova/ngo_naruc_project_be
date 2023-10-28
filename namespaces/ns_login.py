@@ -6,12 +6,35 @@ from bson.objectid import ObjectId
 import bcrypt
 import uuid
 from models import login_model, user_model
+import datetime
+import jwt
+import os
 
 # DB Connect
 client = create_connection()
 db = client['naruc_app']
 
 users_collection = db['users']
+
+def encode_auth_token(user_id):
+    """
+    Generates the Auth Token
+    :return: string
+    """
+    try:
+        payload = {
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, seconds=5),
+            'iat': datetime.datetime.utcnow(),
+            'sub': user_id
+        }
+        print(payload, user_id, os.environ.get('SECRET_KEY'))
+        return jwt.encode(
+            payload,
+            os.environ.get('SECRET_KEY'),
+            algorithm='HS256'
+        )
+    except Exception as e:
+        return e
 
 #login 
 class login(Resource):
@@ -29,10 +52,12 @@ class login(Resource):
 
             if user and bcrypt.checkpw(password.encode('utf-8'), user['password']):
                 user_data = {
+                    '_id': user['_id'],
                     'name': user['name'],
                     'surname': user['surname'],
                     'email': user['email'],
-                    'role': user['role']
+                    'role': user['role'],
+                    'token': encode_auth_token(user['_id'])
                 }
                 return user_data, 200
             else:
