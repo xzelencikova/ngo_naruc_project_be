@@ -59,7 +59,7 @@ class get_client_results(Resource):
             if client_ratings:
                 return client_ratings, 200
             else:
-                return {"message": "Client ratings not found"}, 404
+                return [], 200
         except Exception as e:
             return str(e), 500
         

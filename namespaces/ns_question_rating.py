@@ -22,8 +22,14 @@ class RatingsApi(Resource):
     @api.response(200, 'Successfully Created Question')
     @api.response(404, 'Question Not Found')
     def post(self):
-        api.payload['_id'] = uuid.uuid4().hex
-        db.ratings.insert_one(api.payload)
+        print(api.payload)
+        rating = db.ratings.find_one({"client_id": api.payload["client_id"], "phase_no": api.payload["phase_no"]})
+        
+        if rating:
+            db.ratings.update_one({"_id": rating["_id"]}, {"$set": api.payload})
+        else:
+            api.payload['_id'] = uuid.uuid4().hex
+            db.ratings.insert_one(api.payload)
         
         return api.payload
 
