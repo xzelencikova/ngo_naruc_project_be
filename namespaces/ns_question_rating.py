@@ -4,6 +4,7 @@ from database import create_connection
 from flask import jsonify, request
 from models import rating_model
 import uuid
+from auth_middleware import token_required
 
 # DB Connect
 client = create_connection()
@@ -15,12 +16,16 @@ class RatingsApi(Resource):
     '''
     @api.response(200, 'Success')
     @api.response(404, 'Validation Error')
+    @api.doc(security="apikey")
+    @token_required
     def get(self):
         return jsonify(list(db.ratings.find()))
     
     @api.expect(rating_model)
     @api.response(200, 'Successfully Created Question')
     @api.response(404, 'Question Not Found')
+    @api.doc(security="apikey")
+    @token_required
     def post(self):
         print(api.payload)
         rating = db.ratings.find_one({"client_id": api.payload["client_id"], "phase_no": api.payload["phase_no"]})
@@ -35,7 +40,8 @@ class RatingsApi(Resource):
 
 # Get rating info by ID
 class get_rating_info(Resource):
-    @api.doc(description="Get information about a specific rating by ID")
+    @api.doc(description="Get information about a specific rating by ID", security="apikey")
+    @token_required
     def get(self, rating_id):
         try:
             rating = db.ratings.find_one({'_id': rating_id})
@@ -58,6 +64,8 @@ def count_ratings_for_phase(category, questions):
 # Get rating overview for client
 class RatingOverviewApi(Resource):
     
+    @api.doc(security="apikey")
+    @token_required
     def get(self, client_id):
         
         response = db.questionnaire.distinct("category")

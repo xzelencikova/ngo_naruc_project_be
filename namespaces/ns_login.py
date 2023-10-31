@@ -9,12 +9,14 @@ from models import login_model, user_model
 import datetime
 import jwt
 import os
+from auth_middleware import token_required
 
 # DB Connect
 client = create_connection()
 db = client['naruc_app']
 
 users_collection = db['users']
+
 
 def encode_auth_token(user_id):
     """
@@ -23,11 +25,11 @@ def encode_auth_token(user_id):
     """
     try:
         payload = {
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, seconds=5),
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=1),
             'iat': datetime.datetime.utcnow(),
             'sub': user_id
         }
-        print(payload, user_id, os.environ.get('SECRET_KEY'))
+
         return jwt.encode(
             payload,
             os.environ.get('SECRET_KEY'),
@@ -66,8 +68,10 @@ class login(Resource):
             return str(e), 500
 
 #add user
+# @token_required
 class sign_in(Resource):
-    @api.doc(description="Create a new user")
+    @api.doc(description="Create a new user", security="apikey")
+    @token_required
     @api.expect(user_model)  # Use the defined model for the expected input
     def post(self):
         # Generate a new unique ID for the user
@@ -103,7 +107,8 @@ class sign_in(Resource):
 
 #get_users 
 class get_users(Resource):
-    @api.doc(description="Get information about all registered users")
+    @token_required
+    @api.doc(description="Get information about all registered users", security='apikey')
     def get(self):
         try:
             # Find all users, excluding the '_id' and 'password' fields
@@ -119,6 +124,8 @@ class get_users(Resource):
 #update_user_info 
 class update_user_info(Resource):
      @api.expect(user_model)
+     @token_required
+     @api.doc(security="apikey")
      def put(self, user_id):
         data = request.json
         hashed_password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())
@@ -141,7 +148,8 @@ class update_user_info(Resource):
 
 # Get user info
 class get_user_info(Resource):
-    @api.doc(description="Get information about a specific client by ID")
+    @api.doc(description="Get information about a specific client by ID", security="apikey")
+    @token_required
     def get(self, user_id):
         try:
             users = db.users.find_one({'_id': user_id}, {'password': 0})
@@ -155,6 +163,8 @@ class get_user_info(Resource):
 
 #delete user by id 
 class delete_user(Resource):
+    @token_required
+    @api.doc(security="apikey")
     def delete(self, user_id):
         try:
             result = db.users.delete_one({'_id':user_id})
