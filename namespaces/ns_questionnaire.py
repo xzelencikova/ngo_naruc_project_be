@@ -4,6 +4,7 @@ from database import create_connection
 from flask import jsonify, request
 from models import question_model
 import uuid
+from auth_middleware import *
 
 # DB Connect
 client = create_connection()
@@ -16,6 +17,8 @@ class QuestionsApi(Resource):
     
     @api.response(200, 'Success')
     @api.response(404, 'Validation Error')
+    @api.doc(security="apikey")
+    @token_required
     def get(self):
         
         response = db.questionnaire.find()
@@ -31,6 +34,8 @@ class QuestionsApi(Resource):
     @api.expect(question_model)
     @api.response(200, 'Successfully Created Question')
     @api.response(404, 'Question Not Found')
+    @api.doc(security="apikey")
+    @token_required
     def post(self):
         api.payload['_id'] = uuid.uuid4().hex
         db.questionnaire.insert_one(api.payload)
@@ -44,6 +49,8 @@ class QuestionsCategoryApi(Resource):
     
     @api.response(200, 'Success')
     @api.response(404, 'Validation Error')
+    @api.doc(security="apikey")
+    @token_required
     def get(self):
         
         response = db.questionnaire.find()
@@ -61,9 +68,7 @@ class QuestionsCategoryApi(Resource):
                 "order": r['order'],
                 "questions": [{"_id": r['_id'], "question": r['question']}]
             }
-            
-        print(categories)
-        
+                    
         questions_by_categories = []
         for c in categories:
             questions_by_categories.append(categories[c])
@@ -77,6 +82,8 @@ class QuestionByIdApi(Resource):
     
     @api.response(200, 'Question Found')
     @api.response(404, 'Question Not Found')
+    @api.doc(security="apikey")
+    @token_required
     def get(self, id):
         question = db.questionnaire.find_one({"_id": id})
         return question
@@ -84,12 +91,16 @@ class QuestionByIdApi(Resource):
     @api.expect(question_model)
     @api.response(200, 'Successfully Updated Question')
     @api.response(404, 'Question Not Found')
+    @api.doc(security="apikey")
+    @token_required
     def put(self, id):
         question = db.questionnaire.update_one({"_id": id}, {"$set": {"question": api.payload['question'], "category": api.payload['category']}})
         return {"message": "The question was successfully updated."}
     
     @api.response(202, 'Successfully Deleted Question')
     @api.response(404, 'Question Not Found')
+    @api.doc(security="apikey")
+    @token_required
     def delete(self, id):
         question = db.questionnaire.delete_one({"_id": id})
         return {"message": "The question was successfully deleted."}

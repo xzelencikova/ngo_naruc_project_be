@@ -5,6 +5,7 @@ from bson.objectid import ObjectId
 from datetime import datetime 
 import uuid
 from models import client_model
+from auth_middleware import token_required
 
 api = Namespace('client', description='Client management')
 
@@ -16,23 +17,25 @@ users_collection = db['clients']
 
 # Add client
 class add_client(Resource):
-     @api.doc(description="Create a new client")
-     @api.expect(client_model)
-     def post(self):
-         client_data = api.payload
-         client_data['_id'] = uuid.uuid4().hex
-         client_data['registration_date'] = datetime.now().strftime('%Y-%m-%d')
+    @api.doc(description="Create a new client", security="apikey")
+    @token_required
+    @api.expect(client_model)
+    def post(self):
+        client_data = api.payload
+        client_data['_id'] = uuid.uuid4().hex
+        client_data['registration_date'] = datetime.now().strftime('%Y-%m-%d')
          
 
-         try:
+        try:
             db.clients.insert_one(client_data)
             return client_data, 200
-         except Exception as e:
+        except Exception as e:
             return str(e), 500
 
 # Get client info
 class get_client_info(Resource):
-    @api.doc(description="Get information about a specific client by ID")
+    @api.doc(description="Get information about a specific client by ID", security="apikey")
+    @token_required
     def get(self, user_id):
         try:
             clients = db.clients.find_one({'_id': user_id})
@@ -46,7 +49,8 @@ class get_client_info(Resource):
 
 # Get clients results/ not working, needs to be fixed later
 class get_client_results(Resource):
-    @api.doc(description="Get information about a specific client's results")
+    @api.doc(description="Get information about a specific client's results", security="apikey")
+    @token_required
     def get(self, user_id):
         try:
             ratings = db.ratings.find({"client_id": user_id})
@@ -61,6 +65,8 @@ class get_client_results(Resource):
 # Update client
 class update_client_info(Resource):
      @api.expect(client_model)
+     @api.doc(security="apikey")
+     @token_required
      def put(self, user_id):
         data = request.json
         try:
@@ -81,7 +87,9 @@ class update_client_info(Resource):
 
 # show all clients
 class get_clients(Resource):
-    @api.doc(description="Get information about all clients")
+    
+    @api.doc(description="Get information about all clients", security="apikey")
+    @token_required
     def get(self):
         try:
             users = list(db.clients.find())
@@ -95,6 +103,8 @@ class get_clients(Resource):
 
 # Delete client
 class delete_client(Resource):
+    @api.doc(security="apikey")
+    @token_required
     def delete(self, user_id):
         try:
             result = db.clients.delete_one({'_id':user_id})
