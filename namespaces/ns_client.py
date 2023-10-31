@@ -87,6 +87,7 @@ class update_client_info(Resource):
 
 # show all clients
 class get_clients(Resource):
+    
     @api.doc(description="Get information about all clients", security="apikey")
     @token_required
     def get(self):
