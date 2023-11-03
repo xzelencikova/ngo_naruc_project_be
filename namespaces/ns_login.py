@@ -5,7 +5,7 @@ from flask import request, jsonify
 from bson.objectid import ObjectId
 import bcrypt
 import uuid
-from models import login_model, user_model
+from models import login_model, user_model, user_password
 import datetime
 import jwt
 import os
@@ -72,35 +72,23 @@ class login(Resource):
 class sign_in(Resource):
     @api.doc(description="Create a new user", security="apikey")
     @token_required
-    @api.expect(user_model)  # Use the defined model for the expected input
+    @api.expect(user_model)
     def post(self):
-        # Generate a new unique ID for the user
         user_id = uuid.uuid4().hex
-
-        # Set the '_id' field to the generated user ID
         api.payload['_id'] = user_id
-        data = api.payload  # Use api.payload to access the JSON data
-
-        # Hash the password
+        data = api.payload 
         hashed_password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())
-
-        # Create a user data dictionary
         user_data = {
-            '_id': user_id,  # Set '_id' to the generated user ID
+            '_id': user_id, 
             'name': data['name'],
             'surname': data['surname'],
             'email': data['email'],
             'role': data['role'],
             'password': hashed_password
         }
-
         try:
-            # Connect to MongoDB and select the 'users' collection
             users_collection = db.users
-
-            # Insert the new user data into the 'users' collection
             users_collection.insert_one(user_data)
-
             return 'User created', 200
         except Exception as e:
             return str(e), 500 
@@ -111,13 +99,12 @@ class get_users(Resource):
     @api.doc(description="Get information about all registered users", security='apikey')
     def get(self):
         try:
-            # Find all users, excluding the '_id' and 'password' fields
             users = list(db.users.find({}, {'password': 0}))
             
             if users:
                 return users, 200
             else:
-                return [], 200  # Return an empty list with a 200 status code if no users are found
+                return [], 200 
         except Exception as e:
             return str(e), 500 
 
@@ -128,7 +115,6 @@ class update_user_info(Resource):
      @api.doc(security="apikey")
      def put(self, user_id):
         data = request.json
-        hashed_password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())
         try:
             result = db.users.update_one({'_id': user_id}, {
                 '$set': {
@@ -136,7 +122,6 @@ class update_user_info(Resource):
                     'surname': data['surname'],
                     'email': data['email'],
                     'role': data['role'],
-                    'password': hashed_password
                 }
             })
             if result.modified_count == 1:
@@ -144,7 +129,24 @@ class update_user_info(Resource):
             else:
                 return 'User not found', 404
         except Exception as e:
-            return str(e), 500  # Return a 500 status code for server error
+            return str(e), 500 
+
+#update password
+class update_user_password(Resource):
+    @api.expect(user_password)
+    @token_required
+    @api.doc(security="apikey")
+    def put(self, user_id):
+        data = request.json
+        hashed_password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())
+        try:
+            result = db.users.update_one({'_id': user_id}, {'$set': {'password': hashed_password}})
+            if result.modified_count == 1:
+                return {'message': 'User password changed successfully'}, 200
+            else:
+                return {'message': 'User not found'}, 404
+        except Exception as e:
+            return {'message': 'Server error'}, str(e),500
 
 # Get user info
 class get_user_info(Resource):

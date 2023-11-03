@@ -1,8 +1,6 @@
 from flask_restx import fields
 from namespaces.ns_naruc import api
 
-datetime_format = "%Y-%m-%d"
-
 question_model = api.model("Question", {
     "question": fields.String,
     "category": fields.String,
@@ -14,7 +12,10 @@ user_model = api.model("Login User", {
     "name": fields.String,
     "surname": fields.String,
     "email": fields.String,
-    "role": fields.String,
+    "role": fields.String
+})
+
+user_password = api.model("User password", {
     "password": fields.String
 })
 
