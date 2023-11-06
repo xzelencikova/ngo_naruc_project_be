@@ -5,7 +5,7 @@ from flask import request, jsonify
 from bson.objectid import ObjectId
 import bcrypt
 import uuid
-from models import login_model, user_model, user_password
+from models import login_model, user_model, user_password, user_model_signin
 import datetime
 import jwt
 import os
@@ -72,7 +72,7 @@ class login(Resource):
 class sign_in(Resource):
     @api.doc(description="Create a new user", security="apikey")
     @token_required
-    @api.expect(user_model)
+    @api.expect(user_model_signin)
     def post(self):
         user_id = uuid.uuid4().hex
         api.payload['_id'] = user_id
