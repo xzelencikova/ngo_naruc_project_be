@@ -8,6 +8,14 @@ question_model = api.model("Question", {
     "icon": fields.String
 })
 
+user_model_signin = api.model("user_model_signin", {
+    "name": fields.String,
+    "surname": fields.String,
+    "email": fields.String,
+    "role": fields.String,
+    "password": fields.String
+})
+
 user_model = api.model("Login User", {
     "name": fields.String,
     "surname": fields.String,
