@@ -22,7 +22,7 @@ class RatingsApi(Resource):
     @token_required
     def get(self):
         ratings = []
-        ratings_df = pd.read_sql_query("""SELECT r.*, q.id as question_id, q.*, qr.rating FROM ratings r
+        ratings_df = pd.read_sql_query("""SELECT r.*, q.id as question_id, q.category, q.question, q.category_order, q.icon,, qr.rating FROM ratings r
                             LEFT JOIN questions_ratings qr ON qr.rating_id = r.id
                             RIGHT JOIN questions q ON qr.question_id = q.id
                             ORDER BY r.client_id, r.phase, q.id ASC""", conn)
@@ -32,14 +32,15 @@ class RatingsApi(Resource):
             phases = ratings_df['phase'].unique().tolist()
             for phase in phases:
                 temp_df = ratings_df[(ratings_df['client_id']) == (client & ratings_df['phase'] == phase)]
-                ratings.append({
-                    "_id": temp_df["id"].tolist()[-1],
-                    "phase_no": temp_df["phase"].tolist()[-1],
-                    "date_rated": temp_df["last_update_date"].tolist()[-1],
-                    "rated_by_user_id": temp_df["last_update_by"].tolist()[-1],
-                    "client_id": temp_df["client_id"].tolist()[-1],
-                    "questions_rating": temp_df[temp_df.columns[5:]].to_dict('records')
-                })
+                if not temp_df.empty:
+                    ratings.append({
+                        "_id": temp_df["id"].values.tolist()[-1],
+                        "phase_no": temp_df["phase"].values.tolist()[-1],
+                        "date_rated": temp_df["last_update_date"].values.tolist()[-1],
+                        "rated_by_user_id": temp_df["last_update_by"].values.tolist()[-1],
+                        "client_id": temp_df["client_id"].values.tolist()[-1],
+                        "questions_rating": temp_df[temp_df.columns[5:]].to_dict('records')
+                    })
         
         return ratings
     
@@ -49,34 +50,36 @@ class RatingsApi(Resource):
     @api.doc(security="apikey")
     @token_required
     def post(self):
-        ratings_df = pd.read_sql_query("""SELECT r.*, q.id as question_id, q.id as _id, q.category, q.question, q.category_order, q.icon, qr.rating FROM ratings r
+        ratings_df = pd.read_sql_query("""SELECT r.*, q.id as question_id, q.id as question_id, q.category, q.question, q.category_order, q.icon, qr.rating FROM ratings r
                             LEFT JOIN questions_ratings qr ON qr.rating_id = r.id
                             RIGHT JOIN questions q ON qr.question_id = q.id
-                            WHERE r.client_id = {} AND r.phase_no = {}
+                            WHERE r.client_id = {} AND r.phase = {}
                             ORDER BY r.client_id, r.phase, q.id ASC""".format(api.payload["client_id"], api.payload["phase_no"]), conn)
         
         if not ratings_df.empty:
             rating_id = ratings_df["id"].unique().tolist()[0]
-            cursor.execute("""INSERT INTO ratings(phase, client_id, last_update_by, last_update_date)
-	                            VALUES (%s, %s, %s, %s, %s)""", (api.payload["phase_no"], api.payload["client_id"], api.payload["rated_by_user_id"], api.payload["date_rated"]))
+            cursor.execute("""UPDATE ratings
+                                SET phase=%s, last_update_by=%s, last_update_date=%s
+	                            WHERE client_id=%s and phase=%s""", (api.payload["phase_no"], api.payload["rated_by_user_id"], api.payload["date_rated"], api.payload["client_id"], api.payload["phase_no"]))
 
             for q in api.payload["questions_rating"]:
-                if ratings_df[ratings_df['_id'] == api.payload[q['_id']]].empty:
+                if ratings_df[ratings_df['_id'] == q['question_id']].empty:
                     cursor.execute("""INSERT INTO questions_ratings(question_id, rating_id, rating)
-	                            VALUES (%s, %s, %s)""", (q["_id"], rating_id, api.payload["rating"]))
+	                            VALUES (%s, %s, %s)""", (q["question_id"], rating_id, q["rating"]))
                 else:
                     cursor.execute("""UPDATE questions_ratings
                                    SET question_id=%s, rating_id=%s, rating=%s
-                                   WHERE question_id=%s""", (q["_id"], rating_id, api.payload["rating"], q["_id"]))
+                                   WHERE question_id=%s""", (q["question_id"], rating_id, q["rating"], q["question_id"]))
 
         else:
             cursor.execute("""INSERT INTO ratings(phase, client_id, last_update_by, last_update_date)
-	                        VALUES (%s, %s, %s, %s)""", (api.payload["phase_no"], api.payload["client_id"], api.payload['rated_by_user_id'], api.payload['date_rated']))
-            api.payload['_id'] = cursor.fetchone()
+	                        VALUES (%s, %s, %s, %s)
+                            RETURNING id""", (api.payload["phase_no"], api.payload["client_id"], api.payload['rated_by_user_id'], api.payload['date_rated']))
+            api.payload['_id'] = cursor.fetchone()[0]
             
             for q in api.payload["questions_rating"]:
                 cursor.execute("""INSERT INTO questions_ratings(question_id, rating_id, rating)
-	                            VALUES (%s, %s, %s)""", (q["_id"], api.payload["_id"],api.payload["rating"]))
+	                            VALUES (%s, %s, %s)""", (q["question_id"], api.payload["_id"], q["rating"]))
 
         conn.commit()
         return api.payload
@@ -87,7 +90,7 @@ class RatingApi(Resource):
     @token_required
     def get(self, rating_id):
         try:
-            ratings_df = pd.read_sql_query("""SELECT r.*, q.id as _id, q.category, q.question, q.category_order, q.icon, qr.rating FROM ratings r
+            ratings_df = pd.read_sql_query("""SELECT r.*, q.id as question_id, q.category, q.question, q.category_order, q.icon, qr.rating FROM ratings r
                             LEFT JOIN questions_ratings qr ON qr.rating_id = r.id
                             RIGHT JOIN questions q ON qr.question_id = q.id
                             WHERE r.id = {}
@@ -96,11 +99,11 @@ class RatingApi(Resource):
             rating = {}
             if not ratings_df.empty:
                 rating = {
-                        "_id": ratings_df["id"].tolist()[-1],
-                        "phase_no": ratings_df["phase"].tolist()[-1],
-                        "date_rated": ratings_df["last_update_date"].tolist()[-1],
-                        "rated_by_user_id": ratings_df["last_update_by"].tolist()[-1],
-                        "client_id": ratings_df["client_id"].tolist()[-1],
+                        "_id": ratings_df["id"].values.tolist()[-1],
+                        "phase_no": ratings_df["phase"].values.tolist()[-1],
+                        "date_rated": ratings_df["last_update_date"].values.tolist()[-1],
+                        "rated_by_user_id": ratings_df["last_update_by"].values.tolist()[-1],
+                        "client_id": ratings_df["client_id"].values.tolist()[-1],
                         "questions_rating": ratings_df[ratings_df.columns[5:]].to_dict('records')
                     }
                 return rating, 200
@@ -118,7 +121,7 @@ class RatingOverviewApi(Resource):
         ratings_df = pd.read_sql_query("""SELECT r.*, q.id as _id, q.category, q.question, q.category_order, q.icon, qr.rating FROM ratings r
                             LEFT JOIN questions_ratings qr ON qr.rating_id = r.id
                             RIGHT JOIN questions q ON qr.question_id = q.id
-                            WHERE q.id={}
+                            WHERE r.client_id={}
                             ORDER BY q.id ASC""".format(client_id), conn)
         categories = ratings_df['category'].unique().tolist()
         
@@ -174,6 +177,7 @@ class RatingOverviewApi(Resource):
                     "name": c,
                     "value": phase_3
                 })
+        print(overview)
             
         return overview
 
@@ -187,21 +191,22 @@ class RatingsByClientApi(Resource):
             ratings_df = pd.read_sql_query("""SELECT r.*, q.id as question_id, q.*, qr.rating FROM ratings r
                                 LEFT JOIN questions_ratings qr ON qr.rating_id = r.id
                                 RIGHT JOIN questions q ON qr.question_id = q.id
-                                WHERE q.id={}
+                                WHERE r.client_id={}
                                 ORDER BY r.client_id, r.phase, q.id ASC""".format(client_id), conn)
-            
             phases = ratings_df['phase'].unique().tolist()
+            
             for phase in phases:
                 temp_df = ratings_df[ratings_df['phase'] == phase]
-                ratings.append({
-                    "_id": temp_df["id"].tolist()[-1],
-                    "phase_no": temp_df["phase"].tolist()[-1],
-                    "date_rated": temp_df["last_update_date"].tolist()[-1],
-                    "rated_by_user_id": temp_df["last_update_by"].tolist()[-1],
-                    "client_id": temp_df["client_id"].tolist()[-1],
-                    "questions_rating": temp_df[temp_df.columns[5:]].to_dict('records')
-                })
-        
+                if not temp_df.empty:
+                    ratings.append({
+                        "_id": temp_df["id"].values.tolist()[-1],
+                        "phase_no": temp_df["phase"].values.tolist()[-1],
+                        "date_rated": temp_df["last_update_date"].values.tolist()[-1].strftime("%Y-%m-%d"),
+                        "rated_by_user_id": temp_df["last_update_by"].values.tolist()[-1],
+                        "client_id": temp_df["client_id"].values.tolist()[-1],
+                        "questions_rating": temp_df[temp_df.columns[5:]].to_dict('records')
+                    })
+                            
             return ratings, 200
         except Exception as e:
             return str(e), 500

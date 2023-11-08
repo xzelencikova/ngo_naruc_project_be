@@ -138,6 +138,7 @@ class QuestionByIdApi(Resource):
             cursor.execute("""UPDATE questions
                                 SET category=%s, question=%s, category_order=%s, icon=%s
                                 WHERE id=%s""", (api.payload['category'], api.payload['question'], api.payload['order'], api.payload['icon'], id))
+            conn.commit()
             
             return api.payload, 200
         except Exception as e:
@@ -151,6 +152,7 @@ class QuestionByIdApi(Resource):
     def delete(self, id):
         try:
             cursor.execute("""DELETE FROM questions WHERE id=%s""", (id,))
+            conn.commit()
             return {"message": "The question was successfully deleted."}, 200
         except Exception as e:
             print(e)

@@ -28,7 +28,7 @@ class ClientsApi(Resource):
                     "_id": c[0],
                     "name": c[1],
                     "surname": c[2],
-                    "registration_date": c[3],
+                    "registration_date": c[3].strftime("%Y-%m-%d"),
                     "contract_no": c[4],
                     "last_phase": c[5],
                     "active": c[6]
@@ -46,8 +46,12 @@ class ClientsApi(Resource):
         try:
             api.payload['registration_date'] = datetime.now().strftime('%Y-%m-%d')
             cursor.execute("""INSERT INTO clients(name, surname, registration_date, contract_no, last_phase, active)
-                                VALUES (%s, %s, %s, %s, %s, %s, %s)""", 
+                                VALUES (%s, %s, %s, %s, %s, %s)
+                                RETURNING id""", 
                             (api.payload["name"], api.payload["surname"], api.payload["registration_date"], api.payload["contract_no"], api.payload["last_phase"], api.payload["active"]))
+            id = cursor.fetchone()
+            api.payload["_id"] = id[0]
+            conn.commit()
          
             return api.payload, 200
         except Exception as e:
