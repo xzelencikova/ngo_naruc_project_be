@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from namespaces.ns_naruc import api as ngo_naruc
 from namespaces.ns_questions import *
 from namespaces.ns_login import *
-from namespaces.ns_client import *
+from namespaces.ns_clients import *
 from namespaces.ns_ratings import *
 
 load_dotenv()
@@ -45,11 +45,8 @@ ngo_naruc.add_resource(get_user_info,'/user/get_user_info/<user_id>')
 ngo_naruc.add_resource(update_user_password,'/user/update_password/<user_id>')
 
 # client_management endpoints
-ngo_naruc.add_resource(get_client_info, '/client/get_client_info/<user_id>')
-ngo_naruc.add_resource(add_client, '/client/add_new_client')
-ngo_naruc.add_resource(update_client_info,'/client/update_client/<user_id>')
-ngo_naruc.add_resource(delete_client, '/client/delete_client/<user_id>')
-ngo_naruc.add_resource(get_clients, '/clients')
+ngo_naruc.add_resource(ClientByIdApi, '/client/<int:client_id>')
+ngo_naruc.add_resource(ClientsApi, '/clients')
 
 if __name__ == '__main__':
     
