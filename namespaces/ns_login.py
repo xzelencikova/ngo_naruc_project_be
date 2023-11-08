@@ -78,6 +78,7 @@ class sign_in(Resource):
         api.payload['_id'] = user_id
         data = api.payload 
         hashed_password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())
+        
         user_data = {
             '_id': user_id, 
             'name': data['name'],

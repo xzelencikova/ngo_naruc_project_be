@@ -8,7 +8,6 @@ from auth_middleware import *
 
 # DB Connect
 client, conn = create_connection()
-db = client['naruc_app']
 cursor = conn.cursor()
 
 class QuestionsApi(Resource):

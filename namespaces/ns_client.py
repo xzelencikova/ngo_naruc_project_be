@@ -47,20 +47,7 @@ class get_client_info(Resource):
         except Exception as e:
             return str(e), 500
 
-# Get clients results/ not working, needs to be fixed later
-class get_client_results(Resource):
-    @api.doc(description="Get information about a specific client's results", security="apikey")
-    @token_required
-    def get(self, user_id):
-        try:
-            ratings = db.ratings.find({"client_id": user_id})
-            client_ratings = list(ratings)
-            if client_ratings:
-                return client_ratings, 200
-            else:
-                return [], 200
-        except Exception as e:
-            return str(e), 500
+
         
 # Update client
 class update_client_info(Resource):
