@@ -10,7 +10,7 @@ from auth_middleware import token_required
 api = Namespace('client', description='Client management')
 
 # DB Connect
-client = create_connection()
+client, conn = create_connection()
 db = client['naruc_app']
 
 users_collection = db['clients']

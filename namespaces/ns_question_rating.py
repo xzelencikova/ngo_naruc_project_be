@@ -7,7 +7,7 @@ import uuid
 from auth_middleware import token_required
 
 # DB Connect
-client = create_connection()
+client, conn = create_connection()
 db = client['naruc_app']
 
 class RatingsApi(Resource):

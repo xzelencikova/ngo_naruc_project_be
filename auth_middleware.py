@@ -8,7 +8,7 @@ import os
 from database import create_connection
 
 load_dotenv()
-client = create_connection()
+client, conn = create_connection()
 db = client['naruc_app']
 
 def token_required(f):

@@ -7,7 +7,7 @@ from pymongo import MongoClient
 from dotenv import load_dotenv
 
 from namespaces.ns_naruc import api as ngo_naruc
-from namespaces.ns_questionnaire import *
+from namespaces.ns_questions import *
 from namespaces.ns_login import *
 from namespaces.ns_client import *
 from namespaces.ns_question_rating import *
@@ -26,7 +26,7 @@ api.add_namespace(ngo_naruc, path='/ngo')
 
 # questionnaire endpoints
 ngo_naruc.add_resource(QuestionsApi, '/questions')
-ngo_naruc.add_resource(QuestionsCategoryApi, '/questionnaire')
+ngo_naruc.add_resource(QuestionsByCategoryApi, '/questionnaire')
 ngo_naruc.add_resource(QuestionByIdApi, "/question/<string:id>")
 
 # ratings endpoints
