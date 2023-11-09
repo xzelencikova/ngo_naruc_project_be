@@ -50,7 +50,7 @@ class RatingsApi(Resource):
     @api.doc(security="apikey")
     @token_required
     def post(self):
-        ratings_df = pd.read_sql_query("""SELECT r.*, q.id as question_id, q.id as question_id, q.category, q.question, q.category_order, q.icon, qr.rating FROM ratings r
+        ratings_df = pd.read_sql_query("""SELECT r.*, q.id as question_id, q.category, q.question, q.category_order, q.icon, qr.rating FROM ratings r
                             LEFT JOIN questions_ratings qr ON qr.rating_id = r.id
                             RIGHT JOIN questions q ON qr.question_id = q.id
                             WHERE r.client_id = {} AND r.phase = {}
@@ -59,17 +59,17 @@ class RatingsApi(Resource):
         if not ratings_df.empty:
             rating_id = ratings_df["id"].unique().tolist()[0]
             cursor.execute("""UPDATE ratings
-                                SET phase=%s, last_update_by=%s, last_update_date=%s
-	                            WHERE client_id=%s and phase=%s""", (api.payload["phase_no"], api.payload["rated_by_user_id"], api.payload["date_rated"], api.payload["client_id"], api.payload["phase_no"]))
+                                SET last_update_by=%s, last_update_date=%s
+	                            WHERE client_id=%s and phase=%s""", (api.payload["rated_by_user_id"], api.payload["date_rated"], api.payload["client_id"], api.payload["phase_no"]))
 
             for q in api.payload["questions_rating"]:
-                if ratings_df[ratings_df['_id'] == q['question_id']].empty:
+                if ratings_df[ratings_df['question_id'] == q['question_id']].empty:
                     cursor.execute("""INSERT INTO questions_ratings(question_id, rating_id, rating)
 	                            VALUES (%s, %s, %s)""", (q["question_id"], rating_id, q["rating"]))
                 else:
                     cursor.execute("""UPDATE questions_ratings
-                                   SET question_id=%s, rating_id=%s, rating=%s
-                                   WHERE question_id=%s""", (q["question_id"], rating_id, q["rating"], q["question_id"]))
+                                   SET rating=%s
+                                   WHERE question_id=%s AND rating_id=%s""", (q["rating"], q["question_id"], rating_id))
 
         else:
             cursor.execute("""INSERT INTO ratings(phase, client_id, last_update_by, last_update_date)
@@ -140,9 +140,9 @@ class RatingOverviewApi(Resource):
             
             questions_count = ratings_df[ratings_df["category"] == c].shape[0]
 
-            phase_1 = ratings_df[(ratings_df["category"] == c) & (ratings_df["phase"] == 1)]["rating"].sum()
-            phase_2 = ratings_df[(ratings_df["category"] == c) & (ratings_df["phase"] == 2)]["rating"].sum()
-            phase_3 = ratings_df[(ratings_df["category"] == c) & (ratings_df["phase"] == 3)]["rating"].sum()
+            phase_1 = int(ratings_df[(ratings_df["category"] == c) & (ratings_df["phase"] == 1)]["rating"].sum())
+            phase_2 = int(ratings_df[(ratings_df["category"] == c) & (ratings_df["phase"] == 2)]["rating"].sum())
+            phase_3 = int(ratings_df[(ratings_df["category"] == c) & (ratings_df["phase"] == 3)]["rating"].sum())
             
             overview['bar_overview'].append(
                 {
@@ -188,7 +188,7 @@ class RatingsByClientApi(Resource):
     def get(self, client_id):
         try:
             ratings = []
-            ratings_df = pd.read_sql_query("""SELECT r.*, q.id as question_id, q.*, qr.rating FROM ratings r
+            ratings_df = pd.read_sql_query("""SELECT r.*, q.id as question_id, q.category, q.question, q.category_order, q.icon, qr.rating FROM ratings r
                                 LEFT JOIN questions_ratings qr ON qr.rating_id = r.id
                                 RIGHT JOIN questions q ON qr.question_id = q.id
                                 WHERE r.client_id={}
