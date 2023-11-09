@@ -7,7 +7,7 @@ import uuid
 from auth_middleware import *
 
 # DB Connect
-client, conn = create_connection()
+conn = create_connection()
 cursor = conn.cursor()
 
 class QuestionsApi(Resource):

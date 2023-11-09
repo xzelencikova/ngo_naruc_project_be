@@ -8,8 +8,8 @@ import os
 from database import create_connection
 
 load_dotenv()
-client, conn = create_connection()
-db = client['naruc_app']
+conn = create_connection()
+cursor = conn.cursor()
 
 def token_required(f):
     @wraps(f)
@@ -27,9 +27,10 @@ def token_required(f):
             
         try:
             data = jwt.decode(token, os.environ.get("SECRET_KEY"), algorithms=["HS256"])
-            current_user = db.users.find_one({"_id": data["sub"]})
+            cursor.execute("""SELECT * FROM users WHERE id={}""".format(data["sub"]))
+            current_user = cursor.fetchone()
             
-            if current_user is None:
+            if not current_user:
                 return {
                 "message": "Invalid Authentication token!",
                 "data": None,

@@ -8,9 +8,8 @@ import pandas as pd
 from auth_middleware import token_required
 
 # DB Connect
-client, conn = create_connection()
+conn = create_connection()
 cursor = conn.cursor()
-db = client['naruc_app']
 
 class RatingsApi(Resource):
     '''
