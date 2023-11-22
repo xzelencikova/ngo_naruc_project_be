@@ -7,3 +7,4 @@ pymongo
 bcrypt
 pandas
 pyjwt
+psycopg2
