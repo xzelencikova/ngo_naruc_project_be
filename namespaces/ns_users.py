@@ -85,16 +85,16 @@ class UsersApi(Resource):
     @api.doc(description="Get information about all registered users", security='apikey')
     def get(self):
         try:
-            cursor.execute("""SELECT * FROM users""")
+            cursor.execute("""SELECT id, email, name, surname, role FROM users""")
             users_res = cursor.fetchall()
             
             if users_res:
                 users = [{
-                    "_id": user_res["id"],
-                    "email": user_res["email"],
-                    "name": user_res["name"],
-                    "surname": user_res["surname"],
-                    "role": user_res["role"]
+                    "_id": user_res[0],
+                    "email": user_res[1],
+                    "name": user_res[2],
+                    "surname": user_res[3],
+                    "role": user_res[4]
                 } for user_res in users_res]
                 
                 return users, 200
