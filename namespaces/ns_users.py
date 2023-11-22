@@ -151,12 +151,19 @@ class UserByIdApi(Resource):
     @api.doc(security="apikey")
     def put(self, user_id):
         data = request.json
+        print(data)
         try:
             cursor.execute("""UPDATE users
 	                            SET name=%s, surname=%s, role=%s
 	                            WHERE id=%s""", (api.payload["name"], api.payload["surname"], api.payload["role"], user_id))
             conn.commit()
-            return {'message': 'User was updated successfully.'}, 200
+            return {
+                    "_id": user_id,
+                    "email": api.payload["email"],
+                    "name": api.payload["name"],
+                    "surname": api.payload["surname"],
+                    "role": api.payload["role"]
+                    }, 200
         except Exception as e:
             return str(e), 500
 
