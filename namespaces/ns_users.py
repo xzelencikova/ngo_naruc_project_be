@@ -113,8 +113,8 @@ class UserChangePasswordApi(Resource):
         
         try:
             cursor.execute("""UPDATE users
-	                            SET password=%s, surname=%s, role=%s
-	                            WHERE id=%s""", (hashed_password, user_id))
+	                            SET password=%s
+	                            WHERE id=%s""", (str(hashed_password)[2:-1], user_id))
             conn.commit()
             return {'message': 'User password changed successfully'}, 200
             # else:
@@ -134,11 +134,11 @@ class UserByIdApi(Resource):
             
             if user_res:
                 user = {
-                    "_id": user_res["id"],
-                    "email": user_res["email"],
-                    "name": user_res["name"],
-                    "surname": user_res["surname"],
-                    "role": user_res["role"]
+                    "_id": user_res[0],
+                    "email": user_res[1],
+                    "name": user_res[3],
+                    "surname": user_res[4],
+                    "role": user_res[5]
                 }
                 return user, 200
             else:

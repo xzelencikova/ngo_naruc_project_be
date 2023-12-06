@@ -26,8 +26,9 @@ api.add_namespace(ngo_naruc, path='/ngo')
 
 # questionnaire endpoints
 ngo_naruc.add_resource(QuestionsApi, '/questions')
+ngo_naruc.add_resource(CategoriesApi, '/categories')
 ngo_naruc.add_resource(QuestionsByCategoryApi, '/questionnaire')
-ngo_naruc.add_resource(QuestionByIdApi, "/question/<string:id>")
+ngo_naruc.add_resource(QuestionByIdApi, "/question/<int:id>")
 
 # ratings endpoints
 ngo_naruc.add_resource(RatingsApi, '/ratings')

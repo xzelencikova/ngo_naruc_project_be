@@ -157,4 +157,20 @@ class QuestionByIdApi(Resource):
         except Exception as e:
             print(e)
             return {"message": "Unable to delete question."}, 404
+
+class CategoriesApi(Resource):
     
+    @api.response(200, 'Success')
+    @api.response(404, 'Validation Error')
+    @api.doc(security="apikey")
+    @token_required
+    def get(self):
+        cursor.execute('''SELECT DISTINCT category FROM questions''')
+        c = cursor.fetchall()
+        
+        categories = []
+        
+        for category in c:
+            categories.append({"name": category[0]})
+        
+        return categories
