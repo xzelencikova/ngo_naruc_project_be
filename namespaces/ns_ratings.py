@@ -7,10 +7,6 @@ import uuid
 import pandas as pd
 from auth_middleware import token_required
 
-# DB Connect
-conn = create_connection()
-cursor = conn.cursor()
-
 class RatingsApi(Resource):
     '''
         Endpoint na získanie všetkých ratingov.
@@ -20,6 +16,8 @@ class RatingsApi(Resource):
     @api.doc(security="apikey")
     @token_required
     def get(self):
+        conn = create_connection()
+        cursor = conn.cursor()
         ratings = []
         ratings_df = pd.read_sql_query("""SELECT r.*, q.id as question_id, q.category, q.question, q.category_order, q.icon,, qr.rating FROM ratings r
                             LEFT JOIN questions_ratings qr ON qr.rating_id = r.id
@@ -40,7 +38,7 @@ class RatingsApi(Resource):
                         "client_id": temp_df["client_id"].values.tolist()[-1],
                         "questions_rating": temp_df[temp_df.columns[5:]].to_dict('records')
                     })
-        
+        conn.close()
         return ratings
     
     @api.expect(rating_model)
@@ -49,6 +47,8 @@ class RatingsApi(Resource):
     @api.doc(security="apikey")
     @token_required
     def post(self):
+        conn = create_connection()
+        cursor = conn.cursor()
         ratings_df = pd.read_sql_query("""SELECT r.*, q.id as question_id, q.category, q.question, q.category_order, q.icon, qr.rating FROM ratings r
                             LEFT JOIN questions_ratings qr ON qr.rating_id = r.id
                             RIGHT JOIN questions q ON qr.question_id = q.id
@@ -81,6 +81,7 @@ class RatingsApi(Resource):
 	                            VALUES (%s, %s, %s)""", (q["question_id"], api.payload["_id"], q["rating"]))
 
         conn.commit()
+        conn.close()
         return api.payload
 
 # Get rating info by ID
@@ -89,6 +90,8 @@ class RatingApi(Resource):
     @token_required
     def get(self, rating_id):
         try:
+            conn = create_connection()
+            cursor = conn.cursor()
             ratings_df = pd.read_sql_query("""SELECT r.*, q.id as question_id, q.category, q.question, q.category_order, q.icon, qr.rating FROM ratings r
                             LEFT JOIN questions_ratings qr ON qr.rating_id = r.id
                             RIGHT JOIN questions q ON qr.question_id = q.id
@@ -110,6 +113,8 @@ class RatingApi(Resource):
                 return {'message': 'Rating not found'}, 404
         except Exception as e:
             return str(e), 500
+        finally:
+            conn.close()
     
 # Get rating overview for client
 class RatingOverviewApi(Resource):
@@ -117,6 +122,8 @@ class RatingOverviewApi(Resource):
     @api.doc(security="apikey")
     @token_required
     def get(self, client_id):
+        conn = create_connection()
+        cursor = conn.cursor()
         ratings_df = pd.read_sql_query("""SELECT r.*, q.id as _id, q.category, q.question, q.category_order, q.icon, qr.rating FROM ratings r
                             LEFT JOIN questions_ratings qr ON qr.rating_id = r.id
                             RIGHT JOIN questions q ON qr.question_id = q.id
@@ -176,8 +183,8 @@ class RatingOverviewApi(Resource):
                     "name": c,
                     "value": phase_3
                 })
-        print(overview)
-            
+
+        conn.close()
         return overview
 
 # Get clients results/ not working, needs to be fixed later
@@ -186,6 +193,8 @@ class RatingsByClientApi(Resource):
     @token_required
     def get(self, client_id):
         try:
+            conn = create_connection()
+            cursor = conn.cursor()
             ratings = []
             ratings_df = pd.read_sql_query("""SELECT r.*, q.id as question_id, q.category, q.question, q.category_order, q.icon, qr.rating FROM ratings r
                                 LEFT JOIN questions_ratings qr ON qr.rating_id = r.id
@@ -209,3 +218,5 @@ class RatingsByClientApi(Resource):
             return ratings, 200
         except Exception as e:
             return str(e), 500
+        finally:
+            conn.close()

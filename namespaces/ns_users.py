@@ -11,10 +11,6 @@ import jwt
 import os
 from auth_middleware import token_required
 
-# DB Connect
-conn = create_connection()
-cursor = conn.cursor()
-
 def encode_auth_token(user_id):
     """
     Generates the Auth Token
@@ -41,6 +37,9 @@ class LoginApi(Resource):
     @api.expect(login_model)
     def post(self):
         try:
+            # DB Connect
+            conn = create_connection()
+            cursor = conn.cursor()
             cursor.execute("""SELECT * FROM users WHERE email=%s""", (api.payload["email"],))
             user = cursor.fetchone()
 
@@ -58,6 +57,8 @@ class LoginApi(Resource):
                 return 'Not Found', 404
         except Exception as e:
             return str(e), 500
+        finally:
+            conn.close()
 
 #add user
 class RegisterApi(Resource):
@@ -66,6 +67,9 @@ class RegisterApi(Resource):
     @token_required
     @api.expect(user_model_signin)
     def post(self):
+        # DB Connect
+        conn = create_connection()
+        cursor = conn.cursor()
         hashed_password = bcrypt.hashpw(api.payload['password'].encode('utf-8'), bcrypt.gensalt())  
         user_data = (api.payload['email'], str(hashed_password)[2:-1], api.payload['name'], api.payload['surname'], api.payload['role'])
         
@@ -73,10 +77,11 @@ class RegisterApi(Resource):
             cursor.execute("""INSERT INTO users(email, password, name, surname, role)
 	                            VALUES (%s, %s, %s, %s, %s)""", user_data)
             conn.commit()
-            
             return {"message": 'User created'}, 200
         except Exception as e:
             return str(e), 500 
+        finally:
+            conn.close()
 
 #get_users 
 class UsersApi(Resource):
@@ -85,6 +90,8 @@ class UsersApi(Resource):
     @api.doc(description="Get information about all registered users", security='apikey')
     def get(self):
         try:
+            conn = create_connection()
+            cursor = conn.cursor()
             cursor.execute("""SELECT id, email, name, surname, role FROM users""")
             users_res = cursor.fetchall()
             
@@ -99,7 +106,9 @@ class UsersApi(Resource):
                 
                 return users, 200
         except Exception as e:
-            return str(e), 500 
+            return str(e), 500
+        finally:
+            conn.close() 
 
 #update password
 class UserChangePasswordApi(Resource):
@@ -108,6 +117,9 @@ class UserChangePasswordApi(Resource):
     @token_required
     @api.doc(security="apikey")
     def put(self, user_id):
+        
+        conn = create_connection()
+        cursor = conn.cursor()
         data = request.json
         hashed_password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())
         
@@ -121,6 +133,8 @@ class UserChangePasswordApi(Resource):
             #     return {'message': 'User not found'}, 404
         except Exception as e:
             return {'message': 'Server error'}, str(e),500
+        finally:
+            conn.close()
 
 # Get user info
 class UserByIdApi(Resource):
@@ -129,6 +143,8 @@ class UserByIdApi(Resource):
     @token_required
     def get(self, user_id):
         try:
+            conn = create_connection()
+            cursor = conn.cursor()
             cursor.execute("""SELECT * FROM users WHERE id={}""".format(user_id))
             user_res = cursor.fetchone()
             
@@ -145,14 +161,17 @@ class UserByIdApi(Resource):
                 return {"message": "User not Found"}, 404
         except Exception as e:
             return str(e), 500
+        finally:
+            conn.close()
     
     @api.expect(user_model)
     @token_required
     @api.doc(security="apikey")
     def put(self, user_id):
         data = request.json
-        print(data)
         try:
+            conn = create_connection()
+            cursor = conn.cursor()
             cursor.execute("""UPDATE users
 	                            SET name=%s, surname=%s, role=%s
 	                            WHERE id=%s""", (api.payload["name"], api.payload["surname"], api.payload["role"], user_id))
@@ -166,13 +185,19 @@ class UserByIdApi(Resource):
                     }, 200
         except Exception as e:
             return str(e), 500
+        finally:
+            conn.close()
 
     @token_required
     @api.doc(security="apikey")
     def delete(self, user_id):
         try:
+            conn = create_connection()
+            cursor = conn.cursor()
             cursor.execute("""DELETE FROM users WHERE id={}""".format(user_id))
             conn.commit()
             return {"message": "User was deleted successfully."}, 200
         except Exception as e:
             return str(e), 500
+        finally:
+            conn.close()

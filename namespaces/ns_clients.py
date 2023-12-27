@@ -6,12 +6,7 @@ from datetime import datetime
 import uuid
 from models import client_model
 from auth_middleware import token_required
-
-api = Namespace('client', description='Client management')
-
-# DB Connect
-conn = create_connection()
-cursor = conn.cursor()
+from namespaces.ns_naruc import api
 
 # Add client
 class ClientsApi(Resource):
@@ -20,6 +15,8 @@ class ClientsApi(Resource):
     @token_required
     def get(self):
         try:
+            conn = create_connection()
+            cursor = conn.cursor()
             cursor.execute("""SELECT * FROM clients""")
             clients = [
                 {
@@ -36,12 +33,16 @@ class ClientsApi(Resource):
 
         except Exception as e:
             return str(e), 500 
+        finally:
+            conn.close()
     
     @api.doc(description="Create a new client", security="apikey")
     @token_required
     @api.expect(client_model)
     def post(self):
         try:
+            conn = create_connection()
+            cursor = conn.cursor()
             api.payload['registration_date'] = datetime.now().strftime('%Y-%m-%d')
             cursor.execute("""INSERT INTO clients(name, surname, registration_date, contract_no, last_phase, active)
                                 VALUES (%s, %s, %s, %s, %s, %s)
@@ -54,6 +55,8 @@ class ClientsApi(Resource):
             return api.payload, 200
         except Exception as e:
             return str(e), 500
+        finally:
+            conn.close()
 
 # Get client info
 class ClientByIdApi(Resource):
@@ -62,6 +65,8 @@ class ClientByIdApi(Resource):
     @token_required
     def get(self, client_id):
         try:
+            conn = create_connection()
+            cursor = conn.cursor()
             cursor.execute("""SELECT * FROM clients WHERE id={}""".format(client_id))
             res = cursor.fetchone()
             if res:
@@ -80,12 +85,16 @@ class ClientByIdApi(Resource):
         
         except Exception as e:
             return str(e), 500
+        finally:
+            conn.close()
         
     @api.expect(client_model)
     @api.doc(security="apikey")
     @token_required
     def put(self, client_id):
         try:
+            conn = create_connection()
+            cursor = conn.cursor()
             cursor.execute("""UPDATE clients 
                                 SET name=%s, surname=%s, registration_date=%s, contract_no=%s, last_phase=%s, active=%s
                                 WHERE id=%s""", 
@@ -95,13 +104,19 @@ class ClientByIdApi(Resource):
             return api.payload, 200
         except Exception as e:
             return str(e), 500  # Return a 500 status code for server error
+        finally:
+            conn.close()
 
     @api.doc(security="apikey")
     @token_required
     def delete(self, client_id):
         try:
+            conn = create_connection()
+            cursor = conn.cursor()
             cursor.execute("""DELETE FROM clients WHERE id={}""".format(client_id))
             conn.commit()
             return {"message": "Client was deleted successfully."}, 200
         except Exception as e:
             return str(e), 500 
+        finally:
+            conn.close()

@@ -6,10 +6,6 @@ from models import question_model
 import uuid
 from auth_middleware import *
 
-# DB Connect
-conn = create_connection()
-cursor = conn.cursor()
-
 class QuestionsApi(Resource):
     '''
         Endpoint na získanie všetkých otázok s prislúchajúcimi kategóriami z databázy a vytvorenie novej otázky.
@@ -20,6 +16,9 @@ class QuestionsApi(Resource):
     @api.doc(security="apikey")
     @token_required
     def get(self):
+        conn = create_connection()
+        cursor = conn.cursor()
+        
         cursor.execute('''SELECT id, question, category FROM questions''')
         results = cursor.fetchall()
         
@@ -28,7 +27,7 @@ class QuestionsApi(Resource):
                 "question": res[1],
                 "category": res[2]
             } for res in results]
-        
+        conn.close()
         return questions
     
     @api.expect(question_model)
@@ -38,6 +37,8 @@ class QuestionsApi(Resource):
     @token_required
     def post(self):
         try:
+            conn = create_connection()
+            cursor = conn.cursor()
             cursor.execute("""SELECT * FROM questions WHERE category='{}'""".format(api.payload['category']))
             category_res = cursor.fetchone()
             
@@ -61,6 +62,8 @@ class QuestionsApi(Resource):
         except Exception as e:
             print(e)
             return 404, {"message": "Unable to create question"}
+        finally:
+            conn.close()
 
     
 class QuestionsByCategoryApi(Resource):
@@ -73,6 +76,8 @@ class QuestionsByCategoryApi(Resource):
     @api.doc(security="apikey")
     @token_required
     def get(self):
+        conn = create_connection()
+        cursor = conn.cursor()
         cursor.execute('''SELECT * FROM questions''')
         categories = {}
         
@@ -92,6 +97,8 @@ class QuestionsByCategoryApi(Resource):
         
         for c in categories:
             questions_by_categories.append(categories[c])
+        
+        conn.close()
             
         return sorted(questions_by_categories, key=lambda d: d['order']), 200
     
@@ -105,8 +112,11 @@ class QuestionByIdApi(Resource):
     @api.doc(security="apikey")
     @token_required
     def get(self, id):
+        conn = create_connection()
+        cursor = conn.cursor()
         cursor.execute('''SELECT * FROM questions WHERE id=%s''', (id,))
         q = cursor.fetchone()
+        conn.close()
         
         if q:        
             question = {
@@ -125,6 +135,8 @@ class QuestionByIdApi(Resource):
     @token_required
     def put(self, id):
         try:
+            conn = create_connection()
+            cursor = conn.cursor()
             cursor.execute("""SELECT * FROM questions WHERE category=%s""", (api.payload['category'],))
             category_res = cursor.fetchone()
             
@@ -144,6 +156,8 @@ class QuestionByIdApi(Resource):
         except Exception as e:
             print(e)
             return {"message": "Unable to update a question."}, 404
+        finally:
+            conn.close()
     
     @api.response(200, 'Successfully Deleted Question')
     @api.response(404, 'Question Not Found')
@@ -151,12 +165,16 @@ class QuestionByIdApi(Resource):
     @token_required
     def delete(self, id):
         try:
+            conn = create_connection()
+            cursor = conn.cursor()
             cursor.execute("""DELETE FROM questions WHERE id=%s""", (id,))
             conn.commit()
             return {"message": "The question was successfully deleted."}, 200
         except Exception as e:
             print(e)
             return {"message": "Unable to delete question."}, 404
+        finally:
+            conn.close()
 
 class CategoriesApi(Resource):
     
@@ -165,6 +183,8 @@ class CategoriesApi(Resource):
     @api.doc(security="apikey")
     @token_required
     def get(self):
+        conn = create_connection()
+        cursor = conn.cursor()
         cursor.execute('''SELECT DISTINCT category FROM questions''')
         c = cursor.fetchall()
         
@@ -172,5 +192,5 @@ class CategoriesApi(Resource):
         
         for category in c:
             categories.append({"name": category[0]})
-        
+        conn.close()
         return categories
