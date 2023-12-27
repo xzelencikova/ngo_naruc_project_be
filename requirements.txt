@@ -8,3 +8,4 @@ bcrypt
 pandas
 pyjwt
 psycopg2
+Werkzeug==2.3.7
