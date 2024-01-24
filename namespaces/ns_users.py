@@ -92,7 +92,7 @@ class UsersApi(Resource):
         try:
             conn = create_connection()
             cursor = conn.cursor()
-            cursor.execute("""SELECT id, email, name, surname, role FROM users""")
+            cursor.execute("""SELECT id, email, name, surname, role FROM users ORDER BY surname, name ASC""")
             users_res = cursor.fetchall()
             
             if users_res:

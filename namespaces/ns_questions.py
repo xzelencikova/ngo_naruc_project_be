@@ -19,7 +19,7 @@ class QuestionsApi(Resource):
         conn = create_connection()
         cursor = conn.cursor()
         
-        cursor.execute('''SELECT id, question, category FROM questions''')
+        cursor.execute('''SELECT id, question, category FROM questions ORDER BY id ASC''')
         results = cursor.fetchall()
         
         questions = [{

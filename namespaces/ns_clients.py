@@ -17,7 +17,7 @@ class ClientsApi(Resource):
         try:
             conn = create_connection()
             cursor = conn.cursor()
-            cursor.execute("""SELECT * FROM clients""")
+            cursor.execute("""SELECT * FROM clients ORDER BY id DESC""")
             clients = [
                 {
                     "_id": c[0],
