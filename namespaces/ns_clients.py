@@ -68,17 +68,18 @@ class ClientByIdApi(Resource):
             conn = create_connection()
             cursor = conn.cursor()
             cursor.execute("""SELECT * FROM clients WHERE id={}""".format(client_id))
-            res = cursor.fetchone()
-            if res:
-                client = {
-                    "_id": res[0],
-                    "name": res[1],
-                    "surname": res[2],
-                    "registration_date": res[3],
-                    "contract_no": res[4],
-                    "last_phase": res[5],
-                    "active": res[6]
-                } 
+            result = cursor.fetchone()
+            print(result)
+            if result:
+                client = [{
+                    "_id": result[0],
+                    "name": result[1],
+                    "surname": result[2],
+                    "registration_date": str(result[3]),
+                    "contract_no": result[4],
+                    "last_phase": result[5],
+                    "active": result[6]
+                }]
                 return client
             else:
                 return {'message': 'Client not found'}, 404
@@ -98,7 +99,7 @@ class ClientByIdApi(Resource):
             cursor.execute("""UPDATE clients 
                                 SET name=%s, surname=%s, registration_date=%s, contract_no=%s, last_phase=%s, active=%s
                                 WHERE id=%s""", 
-                                (api.payload["name"], api.payload["surname"], api.payload["registration_date"], api.payload["contract_no"], api.payload["last_phase"], api.payload["active"], client_id))
+                                (api.payload["name"], api.payload["surname"], datetime.strptime(api.payload["registration_date"], "%Y-%m-%d"), api.payload["contract_no"], api.payload["last_phase"], api.payload["active"], client_id))
             conn.commit()
             api.payload["_id"] = client_id
             return api.payload, 200
