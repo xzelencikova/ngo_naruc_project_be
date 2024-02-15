@@ -74,7 +74,7 @@ class ClientByIdApi(Resource):
                     "_id": res[0],
                     "name": res[1],
                     "surname": res[2],
-                    "registration_date": res[3],
+                    "registration_date": datetime.strftime(res[3], "%Y-%m-%d"),
                     "contract_no": res[4],
                     "last_phase": res[5],
                     "active": res[6]
