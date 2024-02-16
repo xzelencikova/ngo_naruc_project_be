@@ -68,18 +68,17 @@ class ClientByIdApi(Resource):
             conn = create_connection()
             cursor = conn.cursor()
             cursor.execute("""SELECT * FROM clients WHERE id={}""".format(client_id))
-            result = cursor.fetchone()
-            print(result)
-            if result:
-                client = [{
-                    "_id": result[0],
-                    "name": result[1],
-                    "surname": result[2],
-                    "registration_date": str(result[3]),
-                    "contract_no": result[4],
-                    "last_phase": result[5],
-                    "active": result[6]
-                }]
+            res = cursor.fetchone()
+            if res:
+                client = {
+                    "_id": res[0],
+                    "name": res[1],
+                    "surname": res[2],
+                    "registration_date": datetime.strftime(res[3], "%Y-%m-%d"),
+                    "contract_no": res[4],
+                    "last_phase": res[5],
+                    "active": res[6]
+                } 
                 return client
             else:
                 return {'message': 'Client not found'}, 404
