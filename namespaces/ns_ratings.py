@@ -19,21 +19,21 @@ class RatingsApi(Resource):
         conn = create_connection()
         cursor = conn.cursor()
         ratings = []
-        ratings_df = pd.read_sql_query("""SELECT r.*, q.id as question_id, q.category, q.question, q.category_order, q.icon,, qr.rating FROM ratings r
+        ratings_df = pd.read_sql_query("""SELECT r.*, q.id as question_id, q.category, q.question, q.category_order, q.icon, qr.rating FROM ratings r
                             LEFT JOIN questions_ratings qr ON qr.rating_id = r.id
                             RIGHT JOIN questions q ON qr.question_id = q.id
-                            ORDER BY r.client_id, r.phase, q.id ASC""", conn)
+                            ORDER BY r.client_id, r.phase, q.id ASC
+""", conn)
         clients = ratings_df['client_id'].unique().tolist()
-        
         for client in clients:
             phases = ratings_df['phase'].unique().tolist()
             for phase in phases:
-                temp_df = ratings_df[(ratings_df['client_id']) == (client & ratings_df['phase'] == phase)]
+                temp_df = ratings_df[((ratings_df['client_id'] == client) & (ratings_df['phase'] == phase))]
                 if not temp_df.empty:
                     ratings.append({
                         "_id": temp_df["id"].values.tolist()[-1],
                         "phase_no": temp_df["phase"].values.tolist()[-1],
-                        "date_rated": temp_df["last_update_date"].values.tolist()[-1],
+                        "date_rated": str(temp_df["last_update_date"].values.tolist()[-1]),
                         "rated_by_user_id": temp_df["last_update_by"].values.tolist()[-1],
                         "client_id": temp_df["client_id"].values.tolist()[-1],
                         "questions_rating": temp_df[temp_df.columns[5:]].to_dict('records')

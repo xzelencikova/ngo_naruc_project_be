@@ -98,7 +98,7 @@ class ClientByIdApi(Resource):
             cursor.execute("""UPDATE clients 
                                 SET name=%s, surname=%s, registration_date=%s, contract_no=%s, last_phase=%s, active=%s
                                 WHERE id=%s""", 
-                                (api.payload["name"], api.payload["surname"], api.payload["registration_date"], api.payload["contract_no"], api.payload["last_phase"], api.payload["active"], client_id))
+                                (api.payload["name"], api.payload["surname"], datetime.strptime(api.payload["registration_date"], "%Y-%m-%d"), api.payload["contract_no"], api.payload["last_phase"], api.payload["active"], client_id))
             conn.commit()
             api.payload["_id"] = client_id
             return api.payload, 200
