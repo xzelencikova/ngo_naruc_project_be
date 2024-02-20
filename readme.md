@@ -28,3 +28,6 @@ Rules:
 3. Import file into <i>app.py</i> and add to namespace with 
         
    ngo_naruc.add_resource(<class of imported endpoint>, path)
+
+Deploy:
+https://github.com/JeevanSandhu/Documentation/blob/master/Flask%20API%20on%20IIS.md 
