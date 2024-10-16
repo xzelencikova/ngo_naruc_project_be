@@ -16,10 +16,11 @@ load_dotenv()
 
 port = os.getenv('PORT')
 
-client = MongoClient(os.environ.get('MONGODB_URI'))
+#client = MongoClient(os.environ.get('MONGODB_URI'))
 
 app = Flask(__name__)
-api = Api(app)
+app.config['APPLICATION_ROOT'] = '/IIS-PythonApi'
+api = Api(app, prefix='/IIS-PythonApi')
 CORS(app)
 
 api.add_namespace(ngo_naruc, path='/ngo')
