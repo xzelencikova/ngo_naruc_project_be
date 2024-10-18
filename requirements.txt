@@ -1,3 +1,4 @@
+# pip install -r requirements.txt
 flask==2.2.2
 flask-restx
 python-dotenv
@@ -9,3 +10,6 @@ pandas
 pyjwt
 psycopg2
 Werkzeug==2.3.7
+colorlog
+waitress
+python-dateutil
