@@ -38,7 +38,7 @@ load_dotenv()
 
 port = int(os.environ.get('SERVER_PORT', '5555')) # debug port when app is run directly
 
-client = MongoClient(os.environ.get('MONGODB_URI'))
+#client = MongoClient(os.environ.get('MONGODB_URI'))
 
 app = Flask(__name__)
 api_bp = Blueprint(
@@ -55,6 +55,7 @@ api = Api(
 )
 apidoc.static_url_path=os.environ.get('API_ROOT') + "/swaggerui"
 app.register_blueprint(api_bp)
+
 CORS(app)
 
 api.add_namespace(ngo_naruc, path='/ngo')
