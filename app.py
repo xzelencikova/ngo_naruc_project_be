@@ -49,7 +49,7 @@ api_bp = Blueprint(
 api = Api(
     api_bp,
     version='1.0',
-    title='NGO Naruc BackeEnd API UI',
+    title='NGO Naruc BackEnd API UI',
     description='Welcome to Flask-RESTX API with Swagger UI documentation',
     doc=os.environ.get('API_SWAGGERUI'),
 )
@@ -90,6 +90,7 @@ ngo_naruc.add_resource(ClientsApi, '/clients')
 #         return {'hello': 'world'}
 
 if __name__ == '__main__':
+
     if port is None:
         app.run(host='localhost', port=5000, debug=True, threaded=True)
     
