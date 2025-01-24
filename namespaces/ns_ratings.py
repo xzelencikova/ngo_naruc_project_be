@@ -22,8 +22,7 @@ class RatingsApi(Resource):
         ratings_df = pd.read_sql_query("""SELECT r.*, q.id as question_id, q.category, q.question, q.category_order, q.icon, qr.rating FROM ratings r
                             LEFT JOIN questions_ratings qr ON qr.rating_id = r.id
                             RIGHT JOIN questions q ON qr.question_id = q.id
-                            ORDER BY r.client_id, r.phase, q.id ASC
-""", conn)
+                            ORDER BY r.client_id, r.phase, q.id ASC""", conn)
         clients = ratings_df['client_id'].unique().tolist()
         for client in clients:
             phases = ratings_df['phase'].unique().tolist()
@@ -130,7 +129,7 @@ class RatingOverviewApi(Resource):
                             WHERE r.client_id={}
                             ORDER BY q.id ASC""".format(client_id), conn)
         categories = ratings_df['category'].unique().tolist()
-        
+        ratings_df.to_csv("ratings.csv")
         overview = {
             "bar_overview": [],
             "pie_1": [],
@@ -144,7 +143,7 @@ class RatingOverviewApi(Resource):
             phase_2 = 0
             phase_3 = 0
             
-            questions_count = ratings_df[ratings_df["category"] == c].shape[0]
+            questions_count = ratings_df[(ratings_df["category"] == c) & (ratings_df["phase"] == 1)].shape[0]
 
             phase_1 = int(ratings_df[(ratings_df["category"] == c) & (ratings_df["phase"] == 1)]["rating"].sum())
             phase_2 = int(ratings_df[(ratings_df["category"] == c) & (ratings_df["phase"] == 2)]["rating"].sum())
