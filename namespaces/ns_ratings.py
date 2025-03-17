@@ -6,6 +6,7 @@ from models import rating_model
 import uuid
 import pandas as pd
 from auth_middleware import token_required
+import numpy as np
 
 class RatingsApi(Resource):
     '''
@@ -28,6 +29,7 @@ class RatingsApi(Resource):
             phases = ratings_df['phase'].unique().tolist()
             for phase in phases:
                 temp_df = ratings_df[((ratings_df['client_id'] == client) & (ratings_df['phase'] == phase))]
+                temp_df = temp_df.replace(np.nan, None)
                 if not temp_df.empty:
                     ratings.append({
                         "_id": temp_df["id"].values.tolist()[-1],
@@ -37,6 +39,7 @@ class RatingsApi(Resource):
                         "client_id": temp_df["client_id"].values.tolist()[-1],
                         "questions_rating": temp_df[temp_df.columns[5:]].to_dict('records')
                     })
+
         conn.close()
         return ratings
     
@@ -128,8 +131,8 @@ class RatingOverviewApi(Resource):
                             RIGHT JOIN questions q ON qr.question_id = q.id
                             WHERE r.client_id={}
                             ORDER BY q.id ASC""".format(client_id), conn)
+
         categories = ratings_df['category'].unique().tolist()
-        ratings_df.to_csv("ratings.csv")
         overview = {
             "bar_overview": [],
             "pie_1": [],
@@ -143,11 +146,14 @@ class RatingOverviewApi(Resource):
             phase_2 = 0
             phase_3 = 0
             
-            questions_count = ratings_df[(ratings_df["category"] == c) & (ratings_df["phase"] == 1)].shape[0]
+            answered_ratings_df_p1 = ratings_df[(ratings_df["category"] == c) & (ratings_df["phase"] == 1) & (ratings_df["rating"] is not np.nan)]
+            answered_ratings_df_p2 = ratings_df[(ratings_df["category"] == c) & (ratings_df["phase"] == 2) & (ratings_df["rating"] is not np.nan)]
+            answered_ratings_df_p3 = ratings_df[(ratings_df["category"] == c) & (ratings_df["phase"] == 3) & (ratings_df["rating"] is not np.nan)]
 
-            phase_1 = int(ratings_df[(ratings_df["category"] == c) & (ratings_df["phase"] == 1)]["rating"].sum())
-            phase_2 = int(ratings_df[(ratings_df["category"] == c) & (ratings_df["phase"] == 2)]["rating"].sum())
-            phase_3 = int(ratings_df[(ratings_df["category"] == c) & (ratings_df["phase"] == 3)]["rating"].sum())
+            phase_1 = int(answered_ratings_df_p1["rating"].sum())
+            phase_2 = int(answered_ratings_df_p2["rating"].sum())
+            phase_3 = int(answered_ratings_df_p3["rating"].sum())
+            
             
             overview['bar_overview'].append(
                 {
@@ -155,15 +161,15 @@ class RatingOverviewApi(Resource):
                     "series": [
                         {
                             "name": "Fáza 1", 
-                            "value": round(phase_1 / (questions_count * 3) * 100, 2)
+                            "value": round(phase_1 / (answered_ratings_df_p1.shape[0] * 2) * 100, 2)
                         },
                         {
-                            "name": "Fáza 2", 
-                            "value": round(phase_2 / (questions_count * 3) * 100, 2)
+                            "name": "Fáza 2",
+                            "value": round(phase_2 / (answered_ratings_df_p2.shape[0] * 2) * 100, 2)
                         },
                         {
                             "name": "Fáza 3", 
-                            "value": round(phase_3 / (questions_count * 3) * 100, 2)
+                            "value": round(phase_3 / (answered_ratings_df_p3.shape[0] * 2) * 100, 2)
                         }
                     ]
                 })
@@ -204,6 +210,7 @@ class RatingsByClientApi(Resource):
             
             for phase in phases:
                 temp_df = ratings_df[ratings_df['phase'] == phase]
+                temp_df = temp_df.replace(np.nan, None)
                 if not temp_df.empty:
                     ratings.append({
                         "_id": temp_df["id"].values.tolist()[-1],
