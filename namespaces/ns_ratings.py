@@ -146,9 +146,12 @@ class RatingOverviewApi(Resource):
             phase_2 = 0
             phase_3 = 0
             
-            answered_ratings_df_p1 = ratings_df[(ratings_df["category"] == c) & (ratings_df["phase"] == 1) & (ratings_df["rating"] is not np.nan)]
+            answered_ratings_df_p1 = ratings_df[(ratings_df["category"] == c) & (ratings_df["phase"] == 1)]
+            answered_ratings_df_p1 = answered_ratings_df_p1.dropna()
             answered_ratings_df_p2 = ratings_df[(ratings_df["category"] == c) & (ratings_df["phase"] == 2) & (ratings_df["rating"] is not np.nan)]
+            answered_ratings_df_p2 = answered_ratings_df_p1.dropna()
             answered_ratings_df_p3 = ratings_df[(ratings_df["category"] == c) & (ratings_df["phase"] == 3) & (ratings_df["rating"] is not np.nan)]
+            answered_ratings_df_p3 = answered_ratings_df_p1.dropna()
 
             phase_1 = int(answered_ratings_df_p1["rating"].sum())
             phase_2 = int(answered_ratings_df_p2["rating"].sum())
