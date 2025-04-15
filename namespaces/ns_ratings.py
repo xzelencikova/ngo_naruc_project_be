@@ -139,19 +139,26 @@ class RatingOverviewApi(Resource):
             "pie_2": [],
             "pie_3": []
         }
-        
+
+        all_answered_ratings_df_p1 = ratings_df[ratings_df['phase'] == 1]
+        all_answered_ratings_df_p1 = all_answered_ratings_df_p1.dropna()
+        all_answered_ratings_df_p2 = ratings_df[ratings_df['phase'] == 2]
+        all_answered_ratings_df_p2 = all_answered_ratings_df_p2.dropna()
+        all_answered_ratings_df_p3 = ratings_df[ratings_df['phase'] == 3]
+        all_answered_ratings_df_p3 = all_answered_ratings_df_p3.dropna()
+
         for c in categories:
             
             phase_1 = 0
             phase_2 = 0
             phase_3 = 0
             
-            answered_ratings_df_p1 = ratings_df[(ratings_df["category"] == c) & (ratings_df["phase"] == 1)]
+            answered_ratings_df_p1 = ratings_df[(ratings_df["category"] == c) & (ratings_df['phase'] == 1)]
             answered_ratings_df_p1 = answered_ratings_df_p1.dropna()
-            answered_ratings_df_p2 = ratings_df[(ratings_df["category"] == c) & (ratings_df["phase"] == 2) & (ratings_df["rating"] is not np.nan)]
-            answered_ratings_df_p2 = answered_ratings_df_p1.dropna()
-            answered_ratings_df_p3 = ratings_df[(ratings_df["category"] == c) & (ratings_df["phase"] == 3) & (ratings_df["rating"] is not np.nan)]
-            answered_ratings_df_p3 = answered_ratings_df_p1.dropna()
+            answered_ratings_df_p2 = ratings_df[(ratings_df["category"] == c) & (ratings_df['phase'] == 2)]
+            answered_ratings_df_p2 = answered_ratings_df_p2.dropna()
+            answered_ratings_df_p3 = ratings_df[(ratings_df["category"] == c) & (ratings_df["phase"] == 3)]
+            answered_ratings_df_p3 = answered_ratings_df_p3.dropna()
 
             phase_1 = int(answered_ratings_df_p1["rating"].sum())
             phase_2 = int(answered_ratings_df_p2["rating"].sum())
@@ -164,32 +171,32 @@ class RatingOverviewApi(Resource):
                     "series": [
                         {
                             "name": "Fáza 1", 
-                            "value": round(phase_1 / (answered_ratings_df_p1.shape[0] * 2) * 100, 2)
+                            "value": None if answered_ratings_df_p1.shape[0] == 0 else round(phase_1 / (answered_ratings_df_p1.shape[0] * 2) * 100, 2)
                         },
                         {
                             "name": "Fáza 2",
-                            "value": round(phase_2 / (answered_ratings_df_p2.shape[0] * 2) * 100, 2)
+                            "value": None if answered_ratings_df_p2.shape[0] == 0 else round(phase_2 / (answered_ratings_df_p2.shape[0] * 2) * 100, 2)
                         },
                         {
                             "name": "Fáza 3", 
-                            "value": round(phase_3 / (answered_ratings_df_p3.shape[0] * 2) * 100, 2)
+                            "value": None if answered_ratings_df_p3.shape[0] == 0 else round(phase_3 / (answered_ratings_df_p3.shape[0] * 2) * 100, 2)
                         }
                     ]
                 })
             overview['pie_1'].append(
                 {
                     "name": c,
-                    "value": phase_1
+                    "value": None if all_answered_ratings_df_p1.shape[0] == 0 else round(phase_1 / (all_answered_ratings_df_p1.shape[0] * 2) * 100, 2)
                 })
             overview['pie_2'].append(
                 {
                     "name": c,
-                    "value": phase_2
+                    "value": None if all_answered_ratings_df_p2.shape[0] == 0 else round(phase_2 / (all_answered_ratings_df_p2.shape[0] * 2) * 100, 2)
                 })
             overview['pie_3'].append(
                 {
                     "name": c,
-                    "value": phase_3
+                    "value": None if all_answered_ratings_df_p3.shape[0] == 0 else round(phase_3 / (all_answered_ratings_df_p3.shape[0] * 2) * 100, 2)
                 })
 
         conn.close()
