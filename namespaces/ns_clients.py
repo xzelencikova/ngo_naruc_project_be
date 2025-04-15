@@ -113,6 +113,9 @@ class ClientByIdApi(Resource):
         try:
             conn = create_connection()
             cursor = conn.cursor()
+            print(client_id)
+            cursor.execute("""DELETE FROM questions_ratings WHERE rating_id in (select id FROM ratings WHERE client_id={})""".format(client_id))
+            cursor.execute("""DELETE FROM ratings WHERE client_id={}""".format(client_id))
             cursor.execute("""DELETE FROM clients WHERE id={}""".format(client_id))
             conn.commit()
             return {"message": "Client was deleted successfully."}, 200
