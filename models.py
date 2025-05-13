@@ -56,3 +56,8 @@ client_model = api.model("Add client", {
     "last_phase": fields.Integer,
     "active": fields.Boolean
 })
+
+lock_clients_model = api.model("Lock clients", {
+    "lock_clients": fields.List(fields.Integer),
+    "unlock_clients": fields.List(fields.Integer)
+})
