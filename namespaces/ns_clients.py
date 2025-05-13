@@ -4,7 +4,7 @@ from flask import request, jsonify
 from bson.objectid import ObjectId
 from datetime import datetime 
 import uuid
-from models import client_model
+from models import client_model, lock_clients_model
 from auth_middleware import token_required
 from namespaces.ns_naruc import api
 
@@ -36,6 +36,31 @@ class ClientsApi(Resource):
         finally:
             conn.close()
     
+    @api.doc(description="Lock / unlock clients", security="apikey")
+    @token_required
+    @api.expect(lock_clients_model)
+    def put(self):
+        try:
+            lock_clients = ", ".join([str(id) for id in api.payload["lock_clients"]])
+            unlock_clients = ", ".join([str(id) for id in api.payload["unlock_clients"]])
+
+            conn = create_connection()
+            cursor = conn.cursor()
+            cursor.execute("""UPDATE clients
+                                SET active=false
+                                WHERE id in ({})""".format(lock_clients))
+            
+            cursor.execute("""UPDATE clients
+                                SET active=true
+                                WHERE id in ({})""".format(unlock_clients))
+            conn.commit()
+            conn.close()
+         
+            return 200
+        except Exception as e:
+            return str(e), 500
+       
+            
     @api.doc(description="Create a new client", security="apikey")
     @token_required
     @api.expect(client_model)
