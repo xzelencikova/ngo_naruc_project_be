@@ -130,9 +130,8 @@ class RatingOverviewApi(Resource):
         ratings_df = pd.read_sql_query("""SELECT r.*, q.id as _id, q.category, q.question, q.category_order, q.icon, qr.rating FROM ratings r
                             LEFT JOIN questions_ratings qr ON qr.rating_id = r.id
                             RIGHT JOIN questions q ON qr.question_id = q.id
-                            WHERE r.client_id={} and qr.rating is not null
+                            WHERE r.client_id={}
                             ORDER BY q.id ASC""".format(client_id), conn)
-        print(ratings_df)
 
         categories = ratings_df['category'].unique().tolist()
         overview = {
