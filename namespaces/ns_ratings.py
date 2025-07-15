@@ -126,11 +126,13 @@ class RatingOverviewApi(Resource):
     def get(self, client_id):
         conn = create_connection()
         cursor = conn.cursor()
+        print(client_id)
         ratings_df = pd.read_sql_query("""SELECT r.*, q.id as _id, q.category, q.question, q.category_order, q.icon, qr.rating FROM ratings r
                             LEFT JOIN questions_ratings qr ON qr.rating_id = r.id
                             RIGHT JOIN questions q ON qr.question_id = q.id
-                            WHERE r.client_id={}
+                            WHERE r.client_id={} and qr.rating is not null
                             ORDER BY q.id ASC""".format(client_id), conn)
+        print(ratings_df)
 
         categories = ratings_df['category'].unique().tolist()
         overview = {
@@ -142,10 +144,13 @@ class RatingOverviewApi(Resource):
 
         all_answered_ratings_df_p1 = ratings_df[ratings_df['phase'] == 1]
         all_answered_ratings_df_p1 = all_answered_ratings_df_p1.dropna()
+        all_answered_ratings_df_p1 = all_answered_ratings_df_p1['rating'].sum()
         all_answered_ratings_df_p2 = ratings_df[ratings_df['phase'] == 2]
         all_answered_ratings_df_p2 = all_answered_ratings_df_p2.dropna()
+        all_answered_ratings_df_p2 = all_answered_ratings_df_p2['rating'].sum()
         all_answered_ratings_df_p3 = ratings_df[ratings_df['phase'] == 3]
         all_answered_ratings_df_p3 = all_answered_ratings_df_p3.dropna()
+        all_answered_ratings_df_p3 = all_answered_ratings_df_p3['rating'].sum()
 
         for c in categories:
             
@@ -163,41 +168,41 @@ class RatingOverviewApi(Resource):
             phase_1 = int(answered_ratings_df_p1["rating"].sum())
             phase_2 = int(answered_ratings_df_p2["rating"].sum())
             phase_3 = int(answered_ratings_df_p3["rating"].sum())
-            
-            
+
             overview['bar_overview'].append(
                 {
                     "name": c,
                     "series": [
                         {
                             "name": "Fáza 1", 
-                            "value": None if answered_ratings_df_p1.shape[0] == 0 else round(phase_1 / (answered_ratings_df_p1.shape[0] * 2) * 100, 2)
+                            "value": 0 if answered_ratings_df_p1.shape[0] == 0 else round(phase_1 / (answered_ratings_df_p1.shape[0] * 2) * 100, 2)
                         },
                         {
                             "name": "Fáza 2",
-                            "value": None if answered_ratings_df_p2.shape[0] == 0 else round(phase_2 / (answered_ratings_df_p2.shape[0] * 2) * 100, 2)
+                            "value": 0 if answered_ratings_df_p2.shape[0] == 0 else round(phase_2 / (answered_ratings_df_p2.shape[0] * 2) * 100, 2)
                         },
                         {
                             "name": "Fáza 3", 
-                            "value": None if answered_ratings_df_p3.shape[0] == 0 else round(phase_3 / (answered_ratings_df_p3.shape[0] * 2) * 100, 2)
+                            "value": 0 if answered_ratings_df_p3.shape[0] == 0 else round(phase_3 / (answered_ratings_df_p3.shape[0] * 2) * 100, 2)
                         }
                     ]
                 })
             overview['pie_1'].append(
                 {
                     "name": c,
-                    "value": None if all_answered_ratings_df_p1.shape[0] == 0 else round(phase_1 / (all_answered_ratings_df_p1.shape[0] * 2) * 100, 2)
+                    "value": None if all_answered_ratings_df_p1 == 0 else round(phase_1 / (all_answered_ratings_df_p1) * 100, 2)
                 })
             overview['pie_2'].append(
                 {
                     "name": c,
-                    "value": None if all_answered_ratings_df_p2.shape[0] == 0 else round(phase_2 / (all_answered_ratings_df_p2.shape[0] * 2) * 100, 2)
+                    "value": None if all_answered_ratings_df_p2 == 0 else round(phase_2 / (all_answered_ratings_df_p2) * 100, 2)
                 })
             overview['pie_3'].append(
                 {
                     "name": c,
-                    "value": None if all_answered_ratings_df_p3.shape[0] == 0 else round(phase_3 / (all_answered_ratings_df_p3.shape[0] * 2) * 100, 2)
+                    "value": None if all_answered_ratings_df_p3 == 0 else round(phase_3 / (all_answered_ratings_df_p3) * 100, 2)
                 })
+
 
         conn.close()
         return overview
