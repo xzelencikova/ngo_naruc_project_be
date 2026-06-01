@@ -1,3 +1,5 @@
+import numpy as np
+
 from app.api.db.repositories.ratings_repo import RatingsRepository
 from app.api.db.database import Database
 
@@ -25,19 +27,24 @@ class RatingsService:
         )
 
         if ratings_df.empty:
-            return {}
+            return []
+
+        ratings_df["last_update_date"] = ratings_df["last_update_date"].astype(str)
 
         ids = ratings_df["id"].unique().tolist()
         rating_score_df = self.repo._convert_to_dataframe(
-            self.repo.get_rating_score_by_rating_id([ids])
+            self.repo.get_rating_score_by_rating_id(ids)
         )
+        rating_score_df = rating_score_df.replace(np.nan, None)
 
         results = self.repo._convert_to_dict(ratings_df)
-        for i in ratings_df.index():
+        for i in ratings_df.index:
             temp_ratings_df = rating_score_df[
                 rating_score_df["rating_id"] == ratings_df.loc[i, "id"]
             ]
+            print("Before append")
             results[i]["ratings"] = self.repo._convert_to_dict(temp_ratings_df)
+            print("After append")
 
         return results
 
@@ -52,15 +59,17 @@ class RatingsService:
                 )
             else:
                 rating_info = self.repo._convert_to_dataframe(payload)
-                self.repo._load_data_to_db(
+                payload["id"] = self.repo._load_data_to_db_return_id(
                     table_name="ratings",
-                    df=rating_info[
+                    data=rating_info[
                         ["phase", "client_id", "last_update_by", "last_update_date"]
-                    ],
+                    ].to_dict("records")[0],
                 )
 
             ratings_df = self.repo._convert_to_dataframe(payload["ratings"])
-            self.repo._load_data_to_db(
+            ratings_df["rating_id"] = payload["id"]
+            print(ratings_df)
+            self.repo._bulk_load_data_to_db(
                 table_name="questions_ratings",
                 df=ratings_df[["question_id", "rating_id", "rating"]],
             )
@@ -84,7 +93,7 @@ class RatingsService:
                     "message": "Nothing to delete.",
                     "status": 200,
                 }
-            client_id = ratings_df.loc[0, "client_id"]
+            client_id = int(ratings_df.loc[0, "client_id"])
             self.repo.delete_rating_score_by_id(id)
             self.repo.delete_rating_by_id(id)
             self.repo.set_rating_phase(id, client_id)
@@ -101,8 +110,8 @@ class RatingsService:
 
     def delete_ratings_by_client_id(self, id):
         try:
-            self.repo._commit(self.repo.delete_rating_score_by_client_id(id))
-            self.repo._commit(self.repo.delete_rating_by_client_id(id))
+            self.repo.delete_rating_score_by_client_id(id)
+            self.repo.delete_rating_by_client_id(id)
             return {
                 "message": "The client and its attached ratings have been successfully deleted.",
                 "status": 200,

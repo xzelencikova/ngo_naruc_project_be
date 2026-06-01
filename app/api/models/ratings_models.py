@@ -10,6 +10,7 @@ def register_ratings_models(api):
             "icon": fields.String,
             "question_id": fields.String,
             "question": fields.String,
+            "rating_id": fields.Integer,
             "rating": fields.Integer,
         },
     )

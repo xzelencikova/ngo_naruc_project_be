@@ -25,6 +25,10 @@ class QuestionsRepository(BaseRepository):
     def update_question_by_id(self, params):
         return self._commit(queries.update_question_query(), params=params)
 
+    def update_question_valid(self, ids: list[int], valid: int):
+        params = {"questions": ids, "is_valid": valid}
+        return self._commit(queries.set_questions_valid_query(), params=params)
+
     def delete_question_by_id(self, id):
         params = {"id": id}
         return self._commit(queries.delete_question_by_id_query(), params=params)
