@@ -1,6 +1,9 @@
 import pandas as pd
+import sqlalchemy as sa
 from sqlalchemy.sql.elements import TextClause, Literal
 from typing import Any
+
+from app.api.db.database import Database
 
 type RowList = list[dict[str, Any]]
 
@@ -15,7 +18,15 @@ class BaseRepository:
     def _convert_to_dict(self, df: pd.DataFrame) -> RowList:
         return df.to_dict(orient="records")
 
-    def _load_data_to_db(
+    def _load_data_to_db_return_id(self, table_name: str, data: dict):
+        table = Database.get_table(table_name)
+        stmt = sa.insert(table).returning(getattr(table.c, "id"))
+
+        with self.engine.begin() as conn:
+            result = conn.execute(stmt, data)
+            return result.scalar()
+
+    def _bulk_load_data_to_db(
         self,
         table_name: str,
         df: pd.DataFrame,
@@ -36,12 +47,17 @@ class BaseRepository:
         return len(df)
 
     def _execute_query(self, query: TextClause, params=None):
+        if isinstance(query, str):
+            query = sa.text(query)
+
         with self.engine.begin() as conn:
             result = conn.execute(query, params or {})
             return result.mappings().all()
 
-    def _commit(self, query: TextClause, params=None) -> int:
+    def _commit(self, query: TextClause, params=None):
         """INSERT/UPDATE/DELETE queries that must be committed"""
+        if isinstance(query, str):
+            query = sa.text(query)
+
         with self.engine.begin() as conn:
-            result = conn.execute(query, params or {})
-            return result.rowcount
+            conn.execute(query, params or {})

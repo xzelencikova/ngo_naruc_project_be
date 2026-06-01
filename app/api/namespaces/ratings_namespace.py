@@ -49,7 +49,7 @@ class GetRatingsByClientEndpoint(Resource):
     )
     @token_required
     def get(self, id):
-        return service.repo.get_ratings_for_client(id)
+        return service.get_ratings_by_client_id(id)
 
     @api.doc(
         description="Delete all client results.",

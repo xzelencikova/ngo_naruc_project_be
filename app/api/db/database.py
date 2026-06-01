@@ -1,5 +1,5 @@
 # db_service.py
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker
 from typing import Optional
 
@@ -9,6 +9,7 @@ class Database:
 
     _engine = None
     _SessionLocal = None
+    _metadata = None
 
     @classmethod
     def init(cls, db_url: str):
@@ -29,6 +30,9 @@ class Database:
             autocommit=False, autoflush=False, bind=cls._engine, future=True
         )
 
+        cls._metadata = MetaData()
+        cls._metadata.reflect(bind=cls._engine)
+
     @classmethod
     def get_engine(cls):
         if cls._engine is None:
@@ -44,3 +48,16 @@ class Database:
                 "Session factory not initialized. Call Database.init() first."
             )
         return cls._SessionLocal()
+
+    @classmethod
+    def get_metadata(cls):
+        if cls._metadata is None:
+            raise RuntimeError(
+                "Database metadata not initialized. Call Database.init() first."
+            )
+        return cls._metadata
+
+    @classmethod
+    def get_table(cls, table_name: str):
+        """Quick access to a reflected table"""
+        return cls.get_metadata().tables[table_name]

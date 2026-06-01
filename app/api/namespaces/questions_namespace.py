@@ -27,6 +27,12 @@ class GetAllQuestionsEndpoint(Resource):
     def post(self):
         return service.create_new_question(api.payload)
 
+    @api.expect(models["lock_questions"])
+    @api.doc(description="Update questions' valid status", security="apikey")
+    @token_required
+    def put(self):
+        return service.set_question_valid_status(api.payload)
+
 
 @api.route("/<int:id>")
 class GetQuestionByIdEndpoint(Resource):
@@ -49,18 +55,14 @@ class GetQuestionByIdEndpoint(Resource):
 
 
 @api.route("/categories")
-class GetCategoriesEndpoint(Resource):
+class GetQuestionsByCategoriesEndpoint(Resource):
 
     @api.doc(description="Get list of all categories.", security="apikey")
     @token_required
     def get(self):
         return service.get_all_categories()
 
-
-@api.route("/category-id/<int:id>")
-class GetQuestionsByCategoryEndpoint(Resource):
-
     @api.doc(description="Get list of all questions by categories.", security="apikey")
     @token_required
-    def get(self):
+    def post(self):
         return service.get_questions_by_category()

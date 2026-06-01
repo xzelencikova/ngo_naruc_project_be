@@ -23,7 +23,15 @@ class AuthenticationEndpoint(Resource):
     @api.doc(security=None)
     @api.expect(models["login"])
     def post(self):
-        return service.process_auth(payload=api.payload)
+        result = service.process_auth(api.payload)
+
+        if "token" in result:
+            return result, 200
+
+        if result.get("status") == 401:
+            return {"message": result["message"]}, 401
+
+        return {"message": result["message"]}, 500
 
 
 # Registration of a new user
@@ -34,7 +42,12 @@ class RegistrationEndpoint(Resource):
     @token_required
     @api.expect(models["signup"])
     def post(self):
-        return service.process_user_registration(new_user=api.payload)
+        result = service.process_user_registration(new_user=api.payload)
+
+        if result["status"] == 200:
+            return result, 200
+
+        return {"message": result["message"]}, 500
 
 
 # get_users
@@ -42,7 +55,7 @@ class RegistrationEndpoint(Resource):
 class GetAllUsersEndpoint(Resource):
 
     @token_required
-    @api.doc(description="Get lidt of all users", security="apikey")
+    @api.doc(description="Get list of all users", security="apikey")
     def get(self):
         return service.get_all_users()
 

@@ -11,7 +11,7 @@ class RatingsRepository(BaseRepository):
         return self._execute_query(queries.get_rating_by_id_query(), params=params)
 
     def get_rating_score_by_rating_id(self, id):
-        params = {"rating_id": id}
+        params = {"rating_ids": id}
         return self._execute_query(
             queries.get_rating_score_by_rating_id_query(), params=params
         )
@@ -39,7 +39,7 @@ class RatingsRepository(BaseRepository):
         return self._commit(queries.delete_rating_info_by_id_query(), params=params)
 
     def delete_rating_score_by_id(self, id):
-        params = {"id": id}
+        params = {"rating_id": id}
         return self._commit(
             queries.delete_ratings_score_by_rating_id_query(), params=params
         )

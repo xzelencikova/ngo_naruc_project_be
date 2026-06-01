@@ -9,9 +9,16 @@ def register_question_models(api):
             "category": fields.String,
             "order": fields.Integer,
             "icon": fields.String,
+            "is_valid": fields.Boolean,
         },
     )
 
-    return {
-        "question": question_model,
-    }
+    lock_questions_model = api.model(
+        "ValidQuestionsModel",
+        {
+            "lock_questions": fields.List(fields.Integer),
+            "unlock_questions": fields.List(fields.Integer),
+        },
+    )
+
+    return {"question": question_model, "lock_questions": lock_questions_model}
