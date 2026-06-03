@@ -25,13 +25,23 @@ class GetAllClientsEndpoint(Resource):
     @api.doc(description="Update clients' active status", security="apikey")
     @token_required
     def put(self):
-        return service.set_client_active_status(api.payload)
+        result = service.set_client_active_status(api.payload)
+
+        if result["status"] == 200:
+            return result, 200
+
+        return {"message": result["message"]}, 500
 
     @api.expect(models["client"])
     @api.doc(description="Create a new client.", security="apikey")
     @token_required
     def post(self):
-        return service.create_new_client(api.payload)
+        result = service.create_new_client(api.payload)
+
+        if result["status"] == 200:
+            return result, 200
+
+        return {"message": result["message"]}, 500
 
 
 # Get client info
@@ -47,9 +57,19 @@ class GetClientByIdEndpoint(Resource):
     @api.doc(description="Update client by id.", security="apikey")
     @token_required
     def put(self, id):
-        return service.update_client_by_id(id, api.payload)
+        result = service.update_client_by_id(id, api.payload)
+
+        if result["status"] == 200:
+            return result, 200
+
+        return {"message": result["message"]}, 500
 
     @api.doc(description="Delete client by id.", security="apikey")
     @token_required
     def delete(self, id):
-        return service.delete_client_by_id(id)
+        result = service.delete_client_by_id(id)
+
+        if result["status"] == 200:
+            return result, 200
+
+        return {"message": result["message"]}, 500

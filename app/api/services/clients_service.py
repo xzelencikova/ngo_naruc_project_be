@@ -63,7 +63,7 @@ class ClientsService:
     def update_client_by_id(self, id, payload):
         try:
             payload["id"] = id
-            self.repo._execute_query(self.repo.update_client_by_id(payload))
+            self.repo.update_client_by_id(payload)
             return {"message": "The client was successfully updated.", "status": 200}
         except Exception as e:
             print(e)

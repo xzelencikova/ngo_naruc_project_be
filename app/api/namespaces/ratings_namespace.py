@@ -18,7 +18,12 @@ class CreateRatingsEndpoint(Resource):
     @api.doc(description="Create new rating.", security="apikey")
     @token_required
     def post(self):
-        return service.create_new_rating(api.payload)
+        result = service.create_new_rating(api.payload)
+
+        if result["status"] == 200:
+            return result, 200
+
+        return {"message": result["message"]}, 500
 
 
 # Get rating info by ID
@@ -36,7 +41,12 @@ class GetRatingByIdEndpoint(Resource):
     )
     @token_required
     def delete(self, id):
-        return service.delete_rating_by_id(id)
+        result = service.delete_rating_by_id(id)
+
+        if result["status"] == 200:
+            return result, 200
+
+        return {"message": result["message"]}, 500
 
 
 # Get clients results/ not working, needs to be fixed later
@@ -57,4 +67,9 @@ class GetRatingsByClientEndpoint(Resource):
     )
     @token_required
     def delete(self, id):
-        return service.delete_ratings_by_client_id(id)
+        result = service.delete_ratings_by_client_id(id)
+
+        if result["status"] == 200:
+            return result, 200
+
+        return {"message": result["message"]}, 500

@@ -68,7 +68,12 @@ class UpdateUserPasswordEndpoint(Resource):
     @token_required
     @api.doc(description="Update user password.", security="apikey")
     def put(self, id):
-        return service.update_user_password(id, api.payload)
+        result = service.update_user_password(id, api.payload)
+
+        if result["status"] == 200:
+            return result, 200
+
+        return {"message": result["message"]}, 500
 
 
 # Get user info
@@ -85,9 +90,19 @@ class GetUserByIdEndpoint(Resource):
     @api.doc(description="Update user by id.", security="apikey")
     def put(self, id: int):
         api.payload["id"] = id
-        return service.update_user_by_id(api.payload)
+        result = service.update_user_by_id(api.payload)
+
+        if result["status"] == 200:
+            return result, 200
+
+        return {"message": result["message"]}, 500
 
     @token_required
     @api.doc(description="Delete user by id.", security="apikey")
     def delete(self, id: int):
-        return service.delete_user_by_id(id)
+        result = service.delete_user_by_id(id)
+
+        if result["status"] == 200:
+            return result, 200
+
+        return {"message": result["message"]}, 500

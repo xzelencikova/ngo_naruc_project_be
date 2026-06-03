@@ -177,6 +177,7 @@ def get_ratings_for_client_query():
                         SELECT cl.name || ' ' || cl.surname as client, r.* FROM ratings r
                         INNER JOIN clients cl ON cl.id = r.client_id
                         WHERE r.client_id=:client_id
+                        ORDER BY r.phase ASC
                     """)
 
 

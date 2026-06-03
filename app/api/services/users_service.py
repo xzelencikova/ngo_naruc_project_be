@@ -25,7 +25,6 @@ class UsersService:
                 "iat": datetime.now(timezone.utc),
                 "sub": user_id,
             }
-            print(payload)
 
             return jwt.encode(payload, os.environ.get("SECRET_KEY"), algorithm="HS256")
         except Exception as e:
@@ -90,11 +89,9 @@ class UsersService:
 
     def update_user_password(self, id: int, payload):
         try:
-            print(payload)
             hashed_password = bcrypt.hashpw(
                 payload["password"].encode("utf-8"), bcrypt.gensalt()
             )
-            print(hashed_password)
             self.repo.update_user_password(id, hashed_password.decode("utf-8"))
             return {"message": "The password was successfullly updated.", "status": 200}
         except Exception as e:
@@ -104,7 +101,10 @@ class UsersService:
     def update_user_by_id(self, payload: UserDTO):
         try:
             rows_updated = self.repo.update_user_by_id(payload)
-            return payload
+            return {
+                "message": "The user was successfully updated",
+                "status": 200,
+            }
         except Exception as e:
             print(e)
             return {"message": "Something went wrong. Try again later.", "status": 500}

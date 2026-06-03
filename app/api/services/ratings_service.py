@@ -42,9 +42,7 @@ class RatingsService:
             temp_ratings_df = rating_score_df[
                 rating_score_df["rating_id"] == ratings_df.loc[i, "id"]
             ]
-            print("Before append")
             results[i]["ratings"] = self.repo._convert_to_dict(temp_ratings_df)
-            print("After append")
 
         return results
 
@@ -68,7 +66,7 @@ class RatingsService:
 
             ratings_df = self.repo._convert_to_dataframe(payload["ratings"])
             ratings_df["rating_id"] = payload["id"]
-            print(ratings_df)
+
             self.repo._bulk_load_data_to_db(
                 table_name="questions_ratings",
                 df=ratings_df[["question_id", "rating_id", "rating"]],

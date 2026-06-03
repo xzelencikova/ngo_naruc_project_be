@@ -25,13 +25,23 @@ class GetAllQuestionsEndpoint(Resource):
     @api.doc(description="Create new question.", security="apikey")
     @token_required
     def post(self):
-        return service.create_new_question(api.payload)
+        result = service.create_new_question(api.payload)
+
+        if result["status"] == 200:
+            return result, 200
+
+        return {"message": result["message"]}, 500
 
     @api.expect(models["lock_questions"])
     @api.doc(description="Update questions' valid status", security="apikey")
     @token_required
     def put(self):
-        return service.set_question_valid_status(api.payload)
+        result = service.set_question_valid_status(api.payload)
+
+        if result["status"] == 200:
+            return result, 200
+
+        return {"message": result["message"]}, 500
 
 
 @api.route("/<int:id>")
@@ -46,12 +56,22 @@ class GetQuestionByIdEndpoint(Resource):
     @api.doc(description="Update question by id.", security="apikey")
     @token_required
     def put(self, id):
-        return service.update_question_by_id(id, api.payload)
+        result = service.update_question_by_id(id, api.payload)
+
+        if result["status"] == 200:
+            return result, 200
+
+        return {"message": result["message"]}, 500
 
     @api.doc(security="apikey")
     @token_required
     def delete(self, id):
-        return service.delete_question_by_id(id)
+        result = service.delete_question_by_id(id)
+
+        if result["status"] == 200:
+            return result, 200
+
+        return {"message": result["message"]}, 500
 
 
 @api.route("/categories")
@@ -65,4 +85,5 @@ class GetQuestionsByCategoriesEndpoint(Resource):
     @api.doc(description="Get list of all questions by categories.", security="apikey")
     @token_required
     def post(self):
-        return service.get_questions_by_category()
+        result = service.get_questions_by_category()
+        return result

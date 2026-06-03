@@ -51,11 +51,10 @@ class QuestionsService:
             if questions_df.empty:
                 payload["category_order"] = self.repo.get_last_category_id()[0]["max"]
                 payload["icon"] = "fa-sliders"
-                print(payload)
             else:
                 payload["category_order"] = int(questions_df.loc[0, "category_order"])
                 payload["icon"] = questions_df.loc[0, "icon"]
-            self.repo._execute_query(self.repo.update_question_by_id(payload))
+            self.repo.update_question_by_id(payload)
             return {"message": "The question was successfully updated.", "status": 200}
         except Exception as e:
             print(e)
